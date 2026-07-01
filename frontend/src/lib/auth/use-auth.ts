@@ -1,8 +1,9 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+import { authControllerLogout } from "@/lib/api/generated/clients";
 import { authControllerMeQueryKey, useAuthControllerMe } from "@/lib/api/generated/hooks";
 import type { AuthResponseDto } from "@/lib/api/generated/types";
-import { clearToken, getToken, setToken } from "./token";
+import { clearTokens, getRefreshToken, getToken, setTokens } from "./token";
 
 /** Current auth state, backed by the /me query (only runs when a token exists). */
 export function useAuth() {
@@ -21,17 +22,22 @@ export function useAuth() {
 export function useSaveSession() {
   const queryClient = useQueryClient();
   return (res: AuthResponseDto) => {
-    setToken(res.accessToken);
+    setTokens(res.accessToken, res.refreshToken);
     queryClient.setQueryData(authControllerMeQueryKey(), res.user);
   };
 }
 
-/** Clear the session and return to the landing page. */
+/** Revoke the refresh token, clear the session, and return to the landing page. */
 export function useLogout() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   return async () => {
-    clearToken();
+    const refreshToken = getRefreshToken();
+    if (refreshToken) {
+      // Best-effort revoke; ignore failures.
+      await authControllerLogout({ refreshToken }).catch(() => {});
+    }
+    clearTokens();
     queryClient.clear();
     await navigate({ to: "/" });
   };

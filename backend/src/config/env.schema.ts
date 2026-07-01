@@ -18,6 +18,9 @@ export const envSchema = z.object({
   JWT_SECRET: z.string().min(16),
   JWT_EXPIRES_IN: z.string().default('15m'),
 
+  // Refresh-token lifetime, in days.
+  REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(30),
+
   // Frontend origin, used to build invitation links.
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
 });
