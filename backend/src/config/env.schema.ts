@@ -23,6 +23,17 @@ export const envSchema = z.object({
 
   // Frontend origin, used to build invitation links.
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
+
+  // SMTP (optional). Without SMTP_HOST, emails are logged instead of sent.
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().int().positive().default(587),
+  SMTP_SECURE: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  MAIL_FROM: z.string().default('RoomMate <no-reply@roommate.dev>'),
 });
 
 export type Env = z.infer<typeof envSchema>;
