@@ -1,8 +1,11 @@
 export type { AppControllerGetHello200, AppControllerGetHelloQuery, AppControllerGetHelloQueryResponse } from "./AppControllerGetHello.ts";
+export type { AuthControllerChangePassword204, AuthControllerChangePassword401, AuthControllerChangePasswordMutation, AuthControllerChangePasswordMutationRequest, AuthControllerChangePasswordMutationResponse } from "./AuthControllerChangePassword.ts";
 export type { AuthControllerLogin200, AuthControllerLogin401, AuthControllerLoginMutation, AuthControllerLoginMutationRequest, AuthControllerLoginMutationResponse } from "./AuthControllerLogin.ts";
 export type { AuthControllerMe200, AuthControllerMe401, AuthControllerMeQuery, AuthControllerMeQueryResponse } from "./AuthControllerMe.ts";
 export type { AuthControllerRegister201, AuthControllerRegister409, AuthControllerRegisterMutation, AuthControllerRegisterMutationRequest, AuthControllerRegisterMutationResponse } from "./AuthControllerRegister.ts";
+export type { AuthControllerUpdateProfile200, AuthControllerUpdateProfile409, AuthControllerUpdateProfileMutation, AuthControllerUpdateProfileMutationRequest, AuthControllerUpdateProfileMutationResponse } from "./AuthControllerUpdateProfile.ts";
 export type { AuthResponseDto, UserSystemRoleEnumKey } from "./AuthResponseDto.ts";
+export type { ChangePasswordDto } from "./ChangePasswordDto.ts";
 export type { CreateHousingUnitDto } from "./CreateHousingUnitDto.ts";
 export type { CreateInvitationDto } from "./CreateInvitationDto.ts";
 export type { CreateReservationDto } from "./CreateReservationDto.ts";
@@ -42,6 +45,7 @@ export type { UnitInvitationsControllerRemoveMember204, UnitInvitationsControlle
 export type { UnitInvitationsControllerRevoke204, UnitInvitationsControllerRevokeMutation, UnitInvitationsControllerRevokeMutationResponse, UnitInvitationsControllerRevokePathParams } from "./UnitInvitationsControllerRevoke.ts";
 export type { UnitReservationsControllerList200, UnitReservationsControllerListPathParams, UnitReservationsControllerListQuery, UnitReservationsControllerListQueryParams, UnitReservationsControllerListQueryResponse } from "./UnitReservationsControllerList.ts";
 export type { UpdateHousingUnitDto } from "./UpdateHousingUnitDto.ts";
+export type { UpdateProfileDto } from "./UpdateProfileDto.ts";
 export type { UpdateReservationDto } from "./UpdateReservationDto.ts";
 export type { UpdateRoomDto } from "./UpdateRoomDto.ts";
 export type { UserResponseDto, UserResponseDtoSystemRoleEnumKey } from "./UserResponseDto.ts";
