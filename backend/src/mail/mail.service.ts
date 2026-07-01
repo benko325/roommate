@@ -43,6 +43,19 @@ export class MailService implements OnModuleInit {
     void this.deliver({ to: email, subject, text, html }, url);
   }
 
+  sendPasswordReset(email: string, token: string): void {
+    const url = `${this.config.get('FRONTEND_URL', { infer: true })}/reset-password/${token}`;
+    const subject = 'Reset your RoomMate password';
+    const text = `Reset your RoomMate password: ${url}\n\nIf you didn't request this, ignore this email.`;
+    const html = `
+      <p>We received a request to reset your RoomMate password.</p>
+      <p><a href="${url}">Choose a new password</a></p>
+      <p style="color:#6f655c">Or paste this link into your browser:<br>${url}</p>
+      <p style="color:#6f655c">If you didn't request this, you can ignore this email.</p>`;
+
+    void this.deliver({ to: email, subject, text, html }, url);
+  }
+
   private async deliver(
     message: { to: string; subject: string; text: string; html: string },
     linkForLog: string,

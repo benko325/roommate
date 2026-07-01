@@ -1,10 +1,12 @@
 export { appControllerGetHello } from "./appControllerGetHello.ts";
 export { authControllerChangePassword } from "./authControllerChangePassword.ts";
+export { authControllerForgotPassword } from "./authControllerForgotPassword.ts";
 export { authControllerLogin } from "./authControllerLogin.ts";
 export { authControllerLogout } from "./authControllerLogout.ts";
 export { authControllerMe } from "./authControllerMe.ts";
 export { authControllerRefresh } from "./authControllerRefresh.ts";
 export { authControllerRegister } from "./authControllerRegister.ts";
+export { authControllerResetPassword } from "./authControllerResetPassword.ts";
 export { authControllerUpdateProfile } from "./authControllerUpdateProfile.ts";
 export { housingUnitsControllerCreate } from "./housingUnitsControllerCreate.ts";
 export { housingUnitsControllerFindAll } from "./housingUnitsControllerFindAll.ts";

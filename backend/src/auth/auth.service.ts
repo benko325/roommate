@@ -5,6 +5,7 @@ import { JwtService } from '@nestjs/jwt';
 import type { User } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import type { Env } from '../config/env.schema';
+import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { type PublicUser, UsersService } from '../users/users.service';
 import type { JwtPayload } from './auth.types';
@@ -12,6 +13,7 @@ import type { LoginDto, RegisterDto } from './dto/auth.dto';
 
 const BCRYPT_ROUNDS = 12;
 const DAY_MS = 86_400_000;
+const MINUTE_MS = 60_000;
 
 type AuthResult = { accessToken: string; refreshToken: string; user: PublicUser };
 
@@ -25,6 +27,7 @@ export class AuthService {
     private readonly jwt: JwtService,
     private readonly prisma: PrismaService,
     private readonly config: ConfigService<Env, true>,
+    private readonly mail: MailService,
   ) {}
 
   async register(dto: RegisterDto): Promise<AuthResult> {
@@ -73,6 +76,45 @@ export class AuthService {
       where: { tokenHash: hashToken(presentedToken), revokedAt: null },
       data: { revokedAt: new Date() },
     });
+  }
+
+  /** Always resolves (no email-existence disclosure); emails a link if the user exists. */
+  async forgotPassword(email: string): Promise<void> {
+    const user = await this.users.findByEmailWithHash(email);
+    if (!user) return;
+
+    const token = randomBytes(32).toString('base64url');
+    const ttlMin = this.config.get('PASSWORD_RESET_TTL_MINUTES', { infer: true });
+    await this.prisma.passwordResetToken.create({
+      data: {
+        userId: user.id,
+        tokenHash: hashToken(token),
+        expiresAt: new Date(Date.now() + ttlMin * MINUTE_MS),
+      },
+    });
+    this.mail.sendPasswordReset(user.email, token);
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    const record = await this.prisma.passwordResetToken.findUnique({
+      where: { tokenHash: hashToken(token) },
+    });
+    if (!record || record.usedAt || record.expiresAt.getTime() < Date.now()) {
+      throw new UnauthorizedException('This reset link is invalid or has expired');
+    }
+    const passwordHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+    await this.prisma.$transaction([
+      this.prisma.user.update({ where: { id: record.userId }, data: { passwordHash } }),
+      this.prisma.passwordResetToken.update({
+        where: { id: record.id },
+        data: { usedAt: new Date() },
+      }),
+      // Sign the user out everywhere after a reset.
+      this.prisma.refreshToken.updateMany({
+        where: { userId: record.userId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      }),
+    ]);
   }
 
   async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {

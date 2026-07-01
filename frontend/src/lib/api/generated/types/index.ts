@@ -1,10 +1,12 @@
 export type { AppControllerGetHello200, AppControllerGetHelloQuery, AppControllerGetHelloQueryResponse } from "./AppControllerGetHello.ts";
 export type { AuthControllerChangePassword204, AuthControllerChangePassword401, AuthControllerChangePasswordMutation, AuthControllerChangePasswordMutationRequest, AuthControllerChangePasswordMutationResponse } from "./AuthControllerChangePassword.ts";
+export type { AuthControllerForgotPassword204, AuthControllerForgotPasswordMutation, AuthControllerForgotPasswordMutationRequest, AuthControllerForgotPasswordMutationResponse } from "./AuthControllerForgotPassword.ts";
 export type { AuthControllerLogin200, AuthControllerLogin401, AuthControllerLoginMutation, AuthControllerLoginMutationRequest, AuthControllerLoginMutationResponse } from "./AuthControllerLogin.ts";
 export type { AuthControllerLogout204, AuthControllerLogoutMutation, AuthControllerLogoutMutationRequest, AuthControllerLogoutMutationResponse } from "./AuthControllerLogout.ts";
 export type { AuthControllerMe200, AuthControllerMe401, AuthControllerMeQuery, AuthControllerMeQueryResponse } from "./AuthControllerMe.ts";
 export type { AuthControllerRefresh200, AuthControllerRefresh401, AuthControllerRefreshMutation, AuthControllerRefreshMutationRequest, AuthControllerRefreshMutationResponse } from "./AuthControllerRefresh.ts";
 export type { AuthControllerRegister201, AuthControllerRegister409, AuthControllerRegisterMutation, AuthControllerRegisterMutationRequest, AuthControllerRegisterMutationResponse } from "./AuthControllerRegister.ts";
+export type { AuthControllerResetPassword204, AuthControllerResetPassword401, AuthControllerResetPasswordMutation, AuthControllerResetPasswordMutationRequest, AuthControllerResetPasswordMutationResponse } from "./AuthControllerResetPassword.ts";
 export type { AuthControllerUpdateProfile200, AuthControllerUpdateProfile409, AuthControllerUpdateProfileMutation, AuthControllerUpdateProfileMutationRequest, AuthControllerUpdateProfileMutationResponse } from "./AuthControllerUpdateProfile.ts";
 export type { AuthResponseDto, UserSystemRoleEnumKey } from "./AuthResponseDto.ts";
 export type { ChangePasswordDto } from "./ChangePasswordDto.ts";
@@ -12,6 +14,7 @@ export type { CreateHousingUnitDto } from "./CreateHousingUnitDto.ts";
 export type { CreateInvitationDto } from "./CreateInvitationDto.ts";
 export type { CreateReservationDto } from "./CreateReservationDto.ts";
 export type { CreateRoomDto } from "./CreateRoomDto.ts";
+export type { ForgotPasswordDto } from "./ForgotPasswordDto.ts";
 export type { HousingUnitDto, HousingUnitDtoViewerRoleEnumKey } from "./HousingUnitDto.ts";
 export type { HousingUnitsControllerCreate201, HousingUnitsControllerCreateMutation, HousingUnitsControllerCreateMutationRequest, HousingUnitsControllerCreateMutationResponse } from "./HousingUnitsControllerCreate.ts";
 export type { HousingUnitsControllerFindAll200, HousingUnitsControllerFindAllQuery, HousingUnitsControllerFindAllQueryResponse } from "./HousingUnitsControllerFindAll.ts";
@@ -32,6 +35,7 @@ export type { ReservationDto, ReservationDtoStatusEnumKey } from "./ReservationD
 export type { ReservationsControllerCancel204, ReservationsControllerCancelMutation, ReservationsControllerCancelMutationResponse, ReservationsControllerCancelPathParams } from "./ReservationsControllerCancel.ts";
 export type { ReservationsControllerMine200, ReservationsControllerMineQuery, ReservationsControllerMineQueryResponse } from "./ReservationsControllerMine.ts";
 export type { ReservationsControllerUpdate200, ReservationsControllerUpdateMutation, ReservationsControllerUpdateMutationRequest, ReservationsControllerUpdateMutationResponse, ReservationsControllerUpdatePathParams } from "./ReservationsControllerUpdate.ts";
+export type { ResetPasswordDto } from "./ResetPasswordDto.ts";
 export type { RoomDto } from "./RoomDto.ts";
 export type { RoomReservationsControllerCreate201, RoomReservationsControllerCreateMutation, RoomReservationsControllerCreateMutationRequest, RoomReservationsControllerCreateMutationResponse, RoomReservationsControllerCreatePathParams } from "./RoomReservationsControllerCreate.ts";
 export type { RoomReservationsControllerList200, RoomReservationsControllerListPathParams, RoomReservationsControllerListQuery, RoomReservationsControllerListQueryParams, RoomReservationsControllerListQueryResponse } from "./RoomReservationsControllerList.ts";
