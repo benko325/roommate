@@ -3,7 +3,14 @@
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
   "files": {
     // Generated shadcn/ui primitives are vendored; public/ holds static assets.
-    "includes": ["**", "!src/components/ui", "!src/routeTree.gen.ts", "!dist", "!public"]
+    "includes": [
+      "**",
+      "!src/components/ui",
+      "!src/routeTree.gen.ts",
+      "!src/lib/api/generated",
+      "!dist",
+      "!public"
+    ]
   },
   "formatter": {
     "enabled": true,

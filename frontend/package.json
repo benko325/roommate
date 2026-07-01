@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "check-types": "tsc -b",
+    "generate:api": "kubb generate",
     "lint": "biome check .",
     "format": "biome check --write .",
     "preview": "vite preview"
@@ -15,6 +16,7 @@
     "@tailwindcss/vite": "^4.3.2",
     "@tanstack/react-query": "^5.101.2",
     "@tanstack/react-router": "^1.170.16",
+    "axios": "^1.18.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.22.0",
@@ -29,6 +31,12 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.1",
+    "@kubb/cli": "^4.39.2",
+    "@kubb/core": "^4.39.2",
+    "@kubb/plugin-client": "^4.39.2",
+    "@kubb/plugin-oas": "^4.39.2",
+    "@kubb/plugin-react-query": "^4.39.2",
+    "@kubb/plugin-ts": "^4.39.2",
     "@tanstack/react-query-devtools": "^5.101.2",
     "@tanstack/react-router-devtools": "^1.167.0",
     "@tanstack/router-plugin": "^1.168.18",
