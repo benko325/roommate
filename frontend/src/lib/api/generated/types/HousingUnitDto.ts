@@ -29,6 +29,10 @@ export type HousingUnitDto = {
     */
     description: string | null;
     /**
+     * @type string
+    */
+    timezone: string;
+    /**
      * @type string, uuid
     */
     ownerId: string;

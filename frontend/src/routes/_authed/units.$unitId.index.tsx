@@ -64,7 +64,9 @@ function UnitDetailPage() {
               {isOwner ? "Owner" : "Member"}
             </Badge>
           </div>
-          <p className="mt-1 text-muted-foreground">{unit.address}</p>
+          <p className="mt-1 text-muted-foreground">
+            {unit.address} · <span className="font-mono text-sm">{unit.timezone}</span>
+          </p>
           {unit.description && <p className="mt-2 max-w-prose text-sm">{unit.description}</p>}
         </div>
         {isOwner && (

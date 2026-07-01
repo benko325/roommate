@@ -11,29 +11,27 @@ import { Input } from "@/components/ui/input";
 import { BookRoomDialog } from "@/features/reservations/book-room-dialog";
 import {
   reservationsControllerMineQueryKey,
+  useHousingUnitsControllerFindOne,
   useReservationsControllerCancel,
   useRoomReservationsControllerList,
   useRoomsControllerFindOne,
 } from "@/lib/api/generated/hooks";
+import { dayBoundsUtc, hhmmInTz, todayInTz } from "@/lib/time";
 
 export const Route = createFileRoute("/_authed/units/$unitId/rooms/$roomId")({
   component: RoomCalendarPage,
 });
 
-// yyyy-mm-dd for "today" in UTC (reservations are handled in UTC).
-function todayUtc(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-const hhmm = (iso: string) => iso.slice(11, 16);
-
 function RoomCalendarPage() {
   const { unitId, roomId } = Route.useParams();
-  const [date, setDate] = useState(todayUtc());
   const queryClient = useQueryClient();
 
+  const { data: unit } = useHousingUnitsControllerFindOne(unitId);
+  const tz = unit?.timezone ?? "UTC";
   const { data: room } = useRoomsControllerFindOne(unitId, roomId);
-  const from = `${date}T00:00:00.000Z`;
-  const to = `${date}T23:59:59.999Z`;
+
+  const [date, setDate] = useState(() => todayInTz(tz));
+  const { from, to } = dayBoundsUtc(date, tz);
   const { data: reservations, isLoading } = useRoomReservationsControllerList(roomId, { from, to });
   const cancel = useReservationsControllerCancel();
 
@@ -50,14 +48,14 @@ function RoomCalendarPage() {
           <h1 className="font-display text-3xl font-bold tracking-tight">{room?.name ?? "Room"}</h1>
           {room?.availableFrom && room?.availableTo && (
             <p className="mt-1 font-mono text-sm text-muted-foreground">
-              Open {room.availableFrom}–{room.availableTo} (UTC)
+              Open {room.availableFrom}–{room.availableTo} ({tz})
             </p>
           )}
         </div>
         <div className="flex items-end gap-2">
           <div className="space-y-1">
             <label htmlFor="date" className="text-xs text-muted-foreground">
-              Date (UTC)
+              Date ({tz})
             </label>
             <Input
               id="date"
@@ -70,6 +68,7 @@ function RoomCalendarPage() {
           <BookRoomDialog
             roomId={roomId}
             date={date}
+            timezone={tz}
             defaultFrom={room?.availableFrom}
             defaultTo={room?.availableTo}
             trigger={
@@ -90,7 +89,7 @@ function RoomCalendarPage() {
               <CardContent className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-4">
                   <span className="font-mono text-sm tabular-nums">
-                    {hhmm(r.startAt)}–{hhmm(r.endAt)}
+                    {hhmmInTz(r.startAt, tz)}–{hhmmInTz(r.endAt, tz)}
                   </span>
                   <div>
                     <div className="flex items-center gap-2">

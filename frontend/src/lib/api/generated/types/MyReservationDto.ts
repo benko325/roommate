@@ -69,4 +69,8 @@ export type MyReservationDto = {
      * @type string
     */
     unitName: string;
+    /**
+     * @type string
+    */
+    unitTimezone: string;
 };
