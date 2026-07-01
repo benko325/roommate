@@ -17,6 +17,10 @@ export type AuthResponseDto = {
     */
     accessToken: string;
     /**
+     * @type string
+    */
+    refreshToken: string;
+    /**
      * @type object
     */
     user: {
