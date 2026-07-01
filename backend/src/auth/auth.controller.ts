@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   NotFoundException,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -20,8 +21,10 @@ import { AuthService } from './auth.service';
 import { CurrentUser } from './decorators/current-user.decorator';
 import {
   AuthResponseDto,
+  ChangePasswordDto,
   LoginDto,
   RegisterDto,
+  UpdateProfileDto,
   UserResponseDto,
 } from './dto/auth.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -61,5 +64,26 @@ export class AuthController {
     const found = await this.users.findById(user.id);
     if (!found) throw new NotFoundException('User no longer exists');
     return found;
+  }
+
+  @Patch('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update your profile (name, email)' })
+  @ApiResponse({ status: 200, type: UserResponseDto })
+  @ApiResponse({ status: 409, description: 'Email already in use' })
+  updateProfile(@CurrentUser() user: AuthUser, @Body() dto: UpdateProfileDto) {
+    return this.users.updateProfile(user.id, dto);
+  }
+
+  @Post('change-password')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Change your password' })
+  @ApiResponse({ status: 204, description: 'Password changed' })
+  @ApiResponse({ status: 401, description: 'Current password incorrect' })
+  changePassword(@CurrentUser() user: AuthUser, @Body() dto: ChangePasswordDto) {
+    return this.auth.changePassword(user.id, dto.currentPassword, dto.newPassword);
   }
 }

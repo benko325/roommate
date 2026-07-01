@@ -44,6 +44,15 @@ export class AuthService {
     return this.issueToken(user);
   }
 
+  async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
+    const user = await this.users.findByIdWithHash(userId);
+    if (!user) throw new UnauthorizedException('User not found');
+    const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!valid) throw new UnauthorizedException('Current password is incorrect');
+    const passwordHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+    await this.users.updatePasswordHash(userId, passwordHash);
+  }
+
   private async issueToken(
     user: User | PublicUser,
   ): Promise<{ accessToken: string; user: PublicUser }> {
