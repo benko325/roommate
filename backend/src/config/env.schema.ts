@@ -21,6 +21,9 @@ export const envSchema = z.object({
   // Refresh-token lifetime, in days.
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().positive().default(30),
 
+  // Password-reset link lifetime, in minutes.
+  PASSWORD_RESET_TTL_MINUTES: z.coerce.number().int().positive().default(60),
+
   // Frontend origin, used to build invitation links.
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
 

@@ -22,9 +22,11 @@ import { CurrentUser } from './decorators/current-user.decorator';
 import {
   AuthResponseDto,
   ChangePasswordDto,
+  ForgotPasswordDto,
   LoginDto,
   RefreshDto,
   RegisterDto,
+  ResetPasswordDto,
   UpdateProfileDto,
   UserResponseDto,
 } from './dto/auth.dto';
@@ -69,6 +71,23 @@ export class AuthController {
   @ApiOperation({ summary: 'Revoke a refresh token (sign out)' })
   logout(@Body() dto: RefreshDto) {
     return this.auth.logout(dto.refreshToken);
+  }
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Request a password-reset email' })
+  @ApiResponse({ status: 204, description: 'Always succeeds (no email disclosure)' })
+  forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.auth.forgotPassword(dto.email);
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: 'Set a new password using a reset token' })
+  @ApiResponse({ status: 204, description: 'Password reset' })
+  @ApiResponse({ status: 401, description: 'Invalid or expired reset link' })
+  resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.auth.resetPassword(dto.token, dto.newPassword);
   }
 
   @Get('me')
