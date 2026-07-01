@@ -21,6 +21,7 @@ function toDto(
     name: unit.name,
     address: unit.address,
     description: unit.description,
+    timezone: unit.timezone,
     ownerId: unit.ownerId,
     createdAt: unit.createdAt,
     updatedAt: unit.updatedAt,
@@ -44,6 +45,7 @@ export class HousingUnitsService {
         name: dto.name,
         address: dto.address,
         description: dto.description ?? null,
+        timezone: dto.timezone ?? 'UTC',
         ownerId,
       },
       include: withCounts,
@@ -81,6 +83,7 @@ export class HousingUnitsService {
         ...(dto.name !== undefined && { name: dto.name }),
         ...(dto.address !== undefined && { address: dto.address }),
         ...(dto.description !== undefined && { description: dto.description }),
+        ...(dto.timezone !== undefined && { timezone: dto.timezone }),
       },
       include: withCounts,
     });

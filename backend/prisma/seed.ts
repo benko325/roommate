@@ -45,6 +45,7 @@ async function main() {
       name: 'Sunny Flat',
       address: '12 Main St, Brno',
       description: 'Third-floor apartment shared by three housemates.',
+      timezone: 'Europe/Bratislava',
       ownerId: alice.id,
       memberships: { create: [{ userId: bob.id }, { userId: carol.id }] },
     },
@@ -79,6 +80,7 @@ async function main() {
     data: {
       name: 'Beach House',
       address: '5 Shore Rd, Senec',
+      timezone: 'Europe/Bratislava',
       ownerId: carol.id,
       memberships: { create: [{ userId: alice.id }] },
     },
