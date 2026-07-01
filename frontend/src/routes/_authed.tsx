@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
-import { CalendarClock, DoorOpen, LogOut } from "lucide-react";
+import { CalendarClock, DoorOpen, LogOut, User } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import { requireAuth } from "@/lib/auth/guard";
@@ -24,6 +24,11 @@ function AuthedLayout() {
             <Button variant="ghost" size="sm" asChild>
               <Link to="/reservations">
                 <CalendarClock className="size-4" /> My reservations
+              </Link>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/profile">
+                <User className="size-4" /> Profile
               </Link>
             </Button>
             <ModeToggle />

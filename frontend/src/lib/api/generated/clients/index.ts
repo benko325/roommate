@@ -1,7 +1,9 @@
 export { appControllerGetHello } from "./appControllerGetHello.ts";
+export { authControllerChangePassword } from "./authControllerChangePassword.ts";
 export { authControllerLogin } from "./authControllerLogin.ts";
 export { authControllerMe } from "./authControllerMe.ts";
 export { authControllerRegister } from "./authControllerRegister.ts";
+export { authControllerUpdateProfile } from "./authControllerUpdateProfile.ts";
 export { housingUnitsControllerCreate } from "./housingUnitsControllerCreate.ts";
 export { housingUnitsControllerFindAll } from "./housingUnitsControllerFindAll.ts";
 export { housingUnitsControllerFindOne } from "./housingUnitsControllerFindOne.ts";
