@@ -39,7 +39,7 @@ function SignInPage() {
       {
         onSuccess: (res) => {
           saveSession(res);
-          navigate({ to: "/app" });
+          navigate({ to: "/dashboard" });
         },
         onError: () => toast.error("Invalid email or password"),
       },

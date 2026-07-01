@@ -17,6 +17,9 @@ export const envSchema = z.object({
   // JWT signing secret and access-token lifetime.
   JWT_SECRET: z.string().min(16),
   JWT_EXPIRES_IN: z.string().default('15m'),
+
+  // Frontend origin, used to build invitation links.
+  FRONTEND_URL: z.string().url().default('http://localhost:5173'),
 });
 
 export type Env = z.infer<typeof envSchema>;
