@@ -37,5 +37,8 @@ coverage/
 .idea/
 .DS_Store
 
+# Local Claude skills (kept local, not version-controlled)
+.claude/skills/
+
 # Misc
 *.local
