@@ -1,9 +1,9 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
-import { CalendarClock, DoorOpen, LogOut, User } from "lucide-react";
+import { CalendarClock, DoorOpen, LogOut, Shield, User } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import { requireAuth } from "@/lib/auth/guard";
-import { useLogout } from "@/lib/auth/use-auth";
+import { useAuth, useLogout } from "@/lib/auth/use-auth";
 
 export const Route = createFileRoute("/_authed")({
   beforeLoad: requireAuth,
@@ -12,6 +12,7 @@ export const Route = createFileRoute("/_authed")({
 
 function AuthedLayout() {
   const logout = useLogout();
+  const { user } = useAuth();
   return (
     <div className="min-h-dvh bg-paper text-ink">
       <header className="border-b">
@@ -31,6 +32,13 @@ function AuthedLayout() {
                 <User className="size-4" /> Profile
               </Link>
             </Button>
+            {user?.systemRole === "ADMIN" && (
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/admin">
+                  <Shield className="size-4" /> Admin
+                </Link>
+              </Button>
+            )}
             <ModeToggle />
             <Button variant="ghost" size="sm" onClick={() => logout()}>
               <LogOut className="size-4" /> Sign out

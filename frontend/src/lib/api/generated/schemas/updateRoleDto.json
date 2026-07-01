@@ -1,0 +1,1 @@
+{"type":"object","properties":{"systemRole":{"type":"string","enum":["ADMIN","USER"]}},"required":["systemRole"],"x-readme-ref-name":"UpdateRoleDto"}

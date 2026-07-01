@@ -29,11 +29,12 @@ async function main() {
   await prisma.user.deleteMany();
 
   const passwordHash = await bcrypt.hash(PASSWORD, 12);
-  const mkUser = (firstName: string, lastName: string, email: string) =>
+  const mkUser = (firstName: string, lastName: string, email: string, systemRole?: 'ADMIN' | 'USER') =>
     prisma.user.create({
-      data: { firstName, lastName, email, passwordHash },
+      data: { firstName, lastName, email, passwordHash, ...(systemRole && { systemRole }) },
     });
 
+  await mkUser('Admin', 'User', 'admin@roommate.dev', 'ADMIN');
   const alice = await mkUser('Alice', 'Novak', 'alice@roommate.dev');
   const bob = await mkUser('Bob', 'Horvath', 'bob@roommate.dev');
   const carol = await mkUser('Carol', 'Kovac', 'carol@roommate.dev');
@@ -124,7 +125,7 @@ async function main() {
   // biome-ignore lint/suspicious/noConsole: seed feedback
   console.log(
     `Seeded ${users} users, ${units} households, ${rooms} rooms, ${reservations} reservations.\n` +
-      `Log in with any of alice/bob/carol/dave @roommate.dev — password: ${PASSWORD}`,
+      `Log in with admin/alice/bob/carol/dave @roommate.dev — password: ${PASSWORD}`,
   );
 }
 

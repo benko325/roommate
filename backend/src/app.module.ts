@@ -4,6 +4,7 @@ import { APP_PIPE } from '@nestjs/core';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AdminModule } from './admin/admin.module';
 import { AuthModule } from './auth/auth.module';
 import { validateEnv } from './config/env.schema';
 import { HousingUnitsModule } from './housing-units/housing-units.module';
@@ -26,6 +27,7 @@ import { RoomsModule } from './rooms/rooms.module';
     RoomsModule,
     InvitationsModule,
     ReservationsModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [

@@ -1,3 +1,11 @@
+export { adminControllerDeleteReservation } from "./adminControllerDeleteReservation.ts";
+export { adminControllerDeleteUnit } from "./adminControllerDeleteUnit.ts";
+export { adminControllerDeleteUser } from "./adminControllerDeleteUser.ts";
+export { adminControllerReservations } from "./adminControllerReservations.ts";
+export { adminControllerSetRole } from "./adminControllerSetRole.ts";
+export { adminControllerStats } from "./adminControllerStats.ts";
+export { adminControllerUnits } from "./adminControllerUnits.ts";
+export { adminControllerUsers } from "./adminControllerUsers.ts";
 export { appControllerGetHello } from "./appControllerGetHello.ts";
 export { authControllerChangePassword } from "./authControllerChangePassword.ts";
 export { authControllerForgotPassword } from "./authControllerForgotPassword.ts";
