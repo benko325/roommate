@@ -1,0 +1,1 @@
+{"type":"object","properties":{"users":{"type":"integer"},"housingUnits":{"type":"integer"},"rooms":{"type":"integer"},"activeReservations":{"type":"integer"},"totalReservations":{"type":"integer"},"pendingInvitations":{"type":"integer"}},"required":["users","housingUnits","rooms","activeReservations","totalReservations","pendingInvitations"],"x-readme-ref-name":"AdminStatsDto"}
