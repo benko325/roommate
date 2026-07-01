@@ -13,6 +13,8 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.2",
+    "@tanstack/react-query": "^5.101.2",
+    "@tanstack/react-router": "^1.170.16",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.22.0",
@@ -27,6 +29,9 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.1",
+    "@tanstack/react-query-devtools": "^5.101.2",
+    "@tanstack/react-router-devtools": "^1.167.0",
+    "@tanstack/router-plugin": "^1.168.18",
     "@types/node": "^24.13.2",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",

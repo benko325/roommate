@@ -1,3 +1,4 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarClock, DoorOpen, Users } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { OccupancyLatch } from "@/components/occupancy-latch";
@@ -5,13 +6,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
+export const Route = createFileRoute("/")({
+  component: LandingPage,
+});
+
 const ROOMS = [
   { name: "Kitchen", note: "free until 18:00", status: "free" as const },
   { name: "Bathroom", note: "booked 09:00–10:00", status: "occupied" as const },
   { name: "Laundry", note: "free all day", status: "free" as const },
 ];
 
-function App() {
+function LandingPage() {
   return (
     <div className="min-h-dvh bg-paper text-ink">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
@@ -20,8 +25,12 @@ function App() {
           <span className="font-display text-xl font-bold tracking-tight">RoomMate</span>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost">Sign in</Button>
-          <Button>Get started</Button>
+          <Button variant="ghost" asChild>
+            <Link to="/signin">Sign in</Link>
+          </Button>
+          <Button asChild>
+            <Link to="/register">Get started</Link>
+          </Button>
           <ModeToggle />
         </div>
       </header>
@@ -40,9 +49,11 @@ function App() {
               laundry — without the group-chat chaos.
             </p>
             <div className="mt-8 flex gap-3">
-              <Button size="lg">Create a household</Button>
-              <Button size="lg" variant="outline">
-                See how it works
+              <Button size="lg" asChild>
+                <Link to="/register">Create a household</Link>
+              </Button>
+              <Button size="lg" variant="outline" asChild>
+                <Link to="/signin">Sign in</Link>
               </Button>
             </div>
             <div className="mt-8 flex items-center gap-6 text-sm text-muted-foreground">
@@ -84,5 +95,3 @@ function App() {
     </div>
   );
 }
-
-export default App;
