@@ -1,0 +1,139 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Class-based dark mode (system default + manual override via .dark on <html>). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+  RoomMate design tokens — see design-system/MASTER.md.
+  shadcn/ui semantic names are mapped onto our warm palette so every component
+  inherits the identity. Domain tokens (honey, sage, clay) are exposed too.
+*/
+:root {
+  --radius: 0.875rem; /* 14px cards; controls derive smaller */
+
+  --paper: #f7f4ef;
+  --surface: #ffffff;
+  --ink: #2a2320;
+  --muted-ink: #6f655c;
+  --honey: #de9a38;
+  --on-honey: #2a2320;
+  --sage: #5b8c6e;
+  --clay: #c0533a;
+  --line: #e7dfd5;
+  --subtle: #efe8de;
+
+  /* shadcn semantic tokens */
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --primary: var(--honey);
+  --primary-foreground: var(--on-honey);
+  --secondary: var(--subtle);
+  --secondary-foreground: var(--ink);
+  --muted: var(--subtle);
+  --muted-foreground: var(--muted-ink);
+  --accent: var(--subtle);
+  --accent-foreground: var(--ink);
+  --destructive: var(--clay);
+  --destructive-foreground: #fdf6f2;
+  --success: var(--sage);
+  --success-foreground: #f4f8f5;
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--honey);
+}
+
+.dark {
+  --paper: #1e1a17;
+  --surface: #2a2420;
+  --ink: #f3ece3;
+  --muted-ink: #a99e92;
+  --honey: #f0b457;
+  --on-honey: #241c10;
+  --sage: #7fb08d;
+  --clay: #e07a54;
+  --line: #3a332d;
+  --subtle: #332c26;
+
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --primary: var(--honey);
+  --primary-foreground: var(--on-honey);
+  --secondary: var(--subtle);
+  --secondary-foreground: var(--ink);
+  --muted: var(--subtle);
+  --muted-foreground: var(--muted-ink);
+  --accent: var(--subtle);
+  --accent-foreground: var(--ink);
+  --destructive: var(--clay);
+  --destructive-foreground: #1e1a17;
+  --success: var(--sage);
+  --success-foreground: #101a13;
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--honey);
+}
+
+/* Map tokens into Tailwind's theme so utilities (bg-primary, text-ink, ...) resolve. */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Domain aliases for custom components. */
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-honey: var(--honey);
+  --color-sage: var(--sage);
+  --color-clay: var(--clay);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque", var(--font-sans);
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  body {
+    margin: 0;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
