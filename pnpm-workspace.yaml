@@ -4,5 +4,6 @@ packages:
 allowBuilds:
   '@prisma/client': true
   '@prisma/engines': true
+  '@scarf/scarf': false # install-analytics telemetry; not needed
   prisma: true
   unrs-resolver: true
