@@ -41,11 +41,28 @@ model User {
   createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt    DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  ownedUnits   HousingUnit[]    @relation("UnitOwner")
-  memberships  UnitMembership[]
-  reservations Reservation[]
+  ownedUnits    HousingUnit[]    @relation("UnitOwner")
+  memberships   UnitMembership[]
+  reservations  Reservation[]
+  refreshTokens RefreshToken[]
 
   @@map("users")
+}
+
+/// Server-side, rotating refresh tokens (stored as a SHA-256 hash so a DB leak
+/// can't reuse them). One row per issued token; rotation revokes the old row.
+model RefreshToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  tokenHash String    @unique @map("token_hash") @db.VarChar(64)
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(6)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
 }
 
 /// A physical shared-living space owned by one user, grouping rooms and tenants.

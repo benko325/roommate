@@ -28,10 +28,15 @@ export const changePasswordSchema = z.object({
   newPassword: z.string().min(8, 'Password must be at least 8 characters').max(72),
 });
 
+export const refreshSchema = z.object({
+  refreshToken: z.string().min(1),
+});
+
 export class RegisterDto extends createZodDto(registerSchema) {}
 export class LoginDto extends createZodDto(loginSchema) {}
 export class UpdateProfileDto extends createZodDto(updateProfileSchema) {}
 export class ChangePasswordDto extends createZodDto(changePasswordSchema) {}
+export class RefreshDto extends createZodDto(refreshSchema) {}
 
 // Response shape (for OpenAPI docs). Dates are serialised as ISO strings.
 const userResponseSchema = z.object({
@@ -46,6 +51,7 @@ const userResponseSchema = z.object({
 
 const authResponseSchema = z.object({
   accessToken: z.string(),
+  refreshToken: z.string(),
   user: userResponseSchema,
 });
 
