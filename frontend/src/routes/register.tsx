@@ -41,7 +41,7 @@ function RegisterPage() {
       {
         onSuccess: (res) => {
           saveSession(res);
-          navigate({ to: "/app" });
+          navigate({ to: "/dashboard" });
         },
         onError: (err) => {
           const conflict = (err as { response?: { status?: number } })?.response?.status === 409;

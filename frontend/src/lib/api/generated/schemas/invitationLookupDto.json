@@ -1,0 +1,1 @@
+{"type":"object","properties":{"unitName":{"type":"string"},"email":{"type":"string"},"status":{"type":"string","enum":["PENDING","ACCEPTED","REJECTED","EXPIRED"]}},"required":["unitName","email","status"],"x-readme-ref-name":"InvitationLookupDto"}

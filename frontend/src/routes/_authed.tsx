@@ -1,0 +1,41 @@
+import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
+import { CalendarClock, DoorOpen, LogOut } from "lucide-react";
+import { ModeToggle } from "@/components/mode-toggle";
+import { Button } from "@/components/ui/button";
+import { requireAuth } from "@/lib/auth/guard";
+import { useLogout } from "@/lib/auth/use-auth";
+
+export const Route = createFileRoute("/_authed")({
+  beforeLoad: requireAuth,
+  component: AuthedLayout,
+});
+
+function AuthedLayout() {
+  const logout = useLogout();
+  return (
+    <div className="min-h-dvh bg-paper text-ink">
+      <header className="border-b">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+          <Link to="/dashboard" className="flex items-center gap-2">
+            <DoorOpen className="size-6 text-honey" />
+            <span className="font-display text-xl font-bold tracking-tight">RoomMate</span>
+          </Link>
+          <nav className="flex items-center gap-1">
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/reservations">
+                <CalendarClock className="size-4" /> My reservations
+              </Link>
+            </Button>
+            <ModeToggle />
+            <Button variant="ghost" size="sm" onClick={() => logout()}>
+              <LogOut className="size-4" /> Sign out
+            </Button>
+          </nav>
+        </div>
+      </header>
+      <main className="mx-auto max-w-6xl px-6 py-8">
+        <Outlet />
+      </main>
+    </div>
+  );
+}

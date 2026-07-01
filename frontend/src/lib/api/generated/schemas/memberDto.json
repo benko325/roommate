@@ -1,0 +1,1 @@
+{"type":"object","properties":{"userId":{"type":"string","format":"uuid"},"email":{"type":"string"},"firstName":{"type":"string"},"lastName":{"type":"string"},"joinedAt":{"type":"string","format":"date-time"}},"required":["userId","email","firstName","lastName","joinedAt"],"x-readme-ref-name":"MemberDto"}

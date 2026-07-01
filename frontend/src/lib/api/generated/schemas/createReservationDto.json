@@ -1,0 +1,1 @@
+{"type":"object","properties":{"startAt":{"type":"string","format":"date-time"},"endAt":{"type":"string","format":"date-time"},"note":{"type":"string","maxLength":500,"nullable":true}},"required":["startAt","endAt"],"x-readme-ref-name":"CreateReservationDto"}
