@@ -42,7 +42,15 @@ on port 5432 with a `roommate` role and `roommate` database.
 pnpm install                       # install workspace deps
 cp backend/.env.example backend/.env
 pnpm --filter @roommate/backend prisma:migrate   # apply DB migrations
-pnpm dev                           # run backend (+ frontend once scaffolded)
+pnpm --filter @roommate/backend db:seed          # load demo data (optional)
+pnpm dev                           # run backend + frontend
 ```
+
+### Demo data
+
+`db:seed` resets the database and loads demo households, rooms, members,
+an invitation, and reservations. Log in with any of
+`alice@roommate.dev`, `bob@roommate.dev`, `carol@roommate.dev`,
+`dave@roommate.dev` — password `password123`.
 
 > Scaffolding in progress — the frontend app is added after the backend milestone.
