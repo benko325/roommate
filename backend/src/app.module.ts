@@ -10,6 +10,7 @@ import { HousingUnitsModule } from './housing-units/housing-units.module';
 import { InvitationsModule } from './invitations/invitations.module';
 import { MailModule } from './mail/mail.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { ReservationsModule } from './reservations/reservations.module';
 import { RoomsModule } from './rooms/rooms.module';
 
 @Module({
@@ -24,6 +25,7 @@ import { RoomsModule } from './rooms/rooms.module';
     HousingUnitsModule,
     RoomsModule,
     InvitationsModule,
+    ReservationsModule,
   ],
   controllers: [AppController],
   providers: [
