@@ -35,11 +35,14 @@ frontend/   React + Vite web app
 
 ## Development
 
-Requires Node 20+ and pnpm (via `corepack enable pnpm`).
+Requires Node 20+, pnpm (via `corepack enable pnpm`), and a local PostgreSQL
+on port 5432 with a `roommate` role and `roommate` database.
 
 ```bash
-pnpm install     # install workspace deps
-pnpm dev         # run backend + frontend
+pnpm install                       # install workspace deps
+cp backend/.env.example backend/.env
+pnpm --filter @roommate/backend prisma:migrate   # apply DB migrations
+pnpm dev                           # run backend (+ frontend once scaffolded)
 ```
 
-> Scaffolding in progress — the backend and frontend apps are added in the first milestone.
+> Scaffolding in progress — the frontend app is added after the backend milestone.
