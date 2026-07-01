@@ -1,0 +1,146 @@
+// RoomMate data model.
+// Mirrors the logical model in Projekt/cast4 (§3). CHECK constraints and
+// PostgreSQL partial/filtered indexes that Prisma cannot express in schema
+// are added as raw SQL in the accompanying migration.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SystemRole {
+  ADMIN
+  USER
+}
+
+enum ReservationStatus {
+  ACTIVE
+  CANCELLED
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+/// A registered person. `systemRole` only distinguishes ADMIN from a regular
+/// USER — the owner/tenant roles are derived from relationships, not stored here.
+model User {
+  id           String     @id @default(uuid()) @db.Uuid
+  email        String     @unique @db.VarChar(254)
+  passwordHash String     @map("password_hash") @db.VarChar(72)
+  firstName    String     @map("first_name") @db.VarChar(80)
+  lastName     String     @map("last_name") @db.VarChar(80)
+  systemRole   SystemRole @default(USER) @map("system_role")
+  createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  ownedUnits   HousingUnit[]    @relation("UnitOwner")
+  memberships  UnitMembership[]
+  reservations Reservation[]
+
+  @@map("users")
+}
+
+/// A physical shared-living space owned by one user, grouping rooms and tenants.
+model HousingUnit {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @db.VarChar(100)
+  address     String   @db.VarChar(200)
+  description String?  @db.Text
+  ownerId     String   @map("owner_id") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // RESTRICT: a user who still owns a unit cannot be deleted.
+  owner       User             @relation("UnitOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  memberships UnitMembership[]
+  rooms       Room[]
+  invitations Invitation[]
+
+  @@index([ownerId])
+  @@map("housing_units")
+}
+
+/// Join table: tenants (members) of a housing unit. M:N between User and HousingUnit.
+model UnitMembership {
+  id       String   @id @default(uuid()) @db.Uuid
+  unitId   String   @map("unit_id") @db.Uuid
+  userId   String   @map("user_id") @db.Uuid
+  joinedAt DateTime @default(now()) @map("joined_at") @db.Timestamptz(6)
+
+  unit HousingUnit @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  user User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([unitId, userId], map: "ux_membership")
+  @@map("unit_memberships")
+}
+
+/// A shared room within a unit. The four optional constraint columns implement
+/// the reservation rules (F-11); CHECK constraints live in the migration.
+model Room {
+  id                     String   @id @default(uuid()) @db.Uuid
+  unitId                 String   @map("unit_id") @db.Uuid
+  name                   String   @db.VarChar(100)
+  description            String?  @db.Text
+  maxReservationHours    Int?     @map("max_reservation_hours")
+  maxReservationsPerDay  Int?     @map("max_reservations_per_day")
+  minGapMinutes          Int?     @map("min_gap_minutes")
+  availableFrom          DateTime? @map("available_from") @db.Time(6)
+  availableTo            DateTime? @map("available_to") @db.Time(6)
+  createdAt              DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt              DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  unit         HousingUnit   @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  reservations Reservation[]
+
+  @@index([unitId])
+  @@map("rooms")
+}
+
+/// A booking of a room by a user for a time range. `status` retains cancelled
+/// rows for audit. The author's name is not stored — it is joined from User,
+/// and the privacy rule (N-05) is enforced in the application layer.
+model Reservation {
+  id        String            @id @default(uuid()) @db.Uuid
+  roomId    String            @map("room_id") @db.Uuid
+  userId    String            @map("user_id") @db.Uuid
+  startAt   DateTime          @map("start_at") @db.Timestamptz(6)
+  endAt     DateTime          @map("end_at") @db.Timestamptz(6)
+  note      String?           @db.VarChar(500)
+  status    ReservationStatus @default(ACTIVE)
+  createdAt DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  // RESTRICT: preserve authorship of reservations; cancel instead of deleting the user.
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  // Overlap lookups (only ACTIVE rows matter) — filtered index added in migration.
+  @@index([roomId, startAt, endAt])
+  @@index([userId, startAt])
+  @@map("reservations")
+}
+
+/// An invitation of an email address into a unit. `token` allows accepting via
+/// an email link without prior login. EXPIRED is set by a periodic job after 14 days.
+model Invitation {
+  id          String           @id @default(uuid()) @db.Uuid
+  unitId      String           @map("unit_id") @db.Uuid
+  email       String           @db.VarChar(254)
+  status      InvitationStatus @default(PENDING)
+  token       String           @unique(map: "ux_invitation_token") @db.VarChar(64)
+  sentAt      DateTime         @default(now()) @map("sent_at") @db.Timestamptz(6)
+  respondedAt DateTime?        @map("responded_at") @db.Timestamptz(6)
+
+  unit HousingUnit @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  @@index([unitId, status], map: "ix_invitation_status_unit")
+  @@map("invitations")
+}
