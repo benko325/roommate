@@ -1,20 +1,49 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import type { FormEvent } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
 import { AuthShell } from "@/components/auth-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAuthControllerLogin } from "@/lib/api/generated/hooks";
+import { useSaveSession } from "@/lib/auth/use-auth";
 
 export const Route = createFileRoute("/signin")({
   component: SignInPage,
 });
 
+const schema = z.object({
+  email: z.string().email("Enter a valid email"),
+  password: z.string().min(1, "Password is required"),
+});
+type Values = z.infer<typeof schema>;
+
 function SignInPage() {
-  // Auth isn't wired yet — the real flow lands with the backend auth milestone.
-  function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    toast.info("Sign-in isn't connected yet — coming in the next milestone.");
+  const navigate = useNavigate();
+  const saveSession = useSaveSession();
+  const login = useAuthControllerLogin();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<Values>({
+    resolver: zodResolver(schema),
+    defaultValues: { email: "", password: "" },
+  });
+
+  function onSubmit(values: Values) {
+    login.mutate(
+      { data: values },
+      {
+        onSuccess: (res) => {
+          saveSession(res);
+          navigate({ to: "/app" });
+        },
+        onError: () => toast.error("Invalid email or password"),
+      },
+    );
   }
 
   return (
@@ -30,17 +59,40 @@ function SignInPage() {
         </>
       }
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" autoComplete="email" placeholder="you@example.com" />
+          <Input
+            id="email"
+            type="email"
+            autoComplete="email"
+            placeholder="you@example.com"
+            aria-invalid={!!errors.email}
+            {...register("email")}
+          />
+          {errors.email && (
+            <p role="alert" className="text-sm text-destructive">
+              {errors.email.message}
+            </p>
+          )}
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
-          <Input id="password" type="password" autoComplete="current-password" />
+          <Input
+            id="password"
+            type="password"
+            autoComplete="current-password"
+            aria-invalid={!!errors.password}
+            {...register("password")}
+          />
+          {errors.password && (
+            <p role="alert" className="text-sm text-destructive">
+              {errors.password.message}
+            </p>
+          )}
         </div>
-        <Button type="submit" className="w-full">
-          Sign in
+        <Button type="submit" className="w-full" disabled={login.isPending}>
+          {login.isPending ? "Signing in…" : "Sign in"}
         </Button>
       </form>
     </AuthShell>
