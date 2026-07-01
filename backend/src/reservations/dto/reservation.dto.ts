@@ -38,5 +38,6 @@ const myReservationSchema = reservationSchema.extend({
   roomName: z.string(),
   unitId: z.string().uuid(),
   unitName: z.string(),
+  unitTimezone: z.string(),
 });
 export class MyReservationDto extends createZodDto(myReservationSchema) {}

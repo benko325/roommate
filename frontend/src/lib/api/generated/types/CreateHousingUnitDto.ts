@@ -22,4 +22,9 @@ export type CreateHousingUnitDto = {
      * @type string
     */
     description?: string | null;
+    /**
+     * @maxLength 64
+     * @type string | undefined
+    */
+    timezone?: string;
 };

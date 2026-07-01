@@ -24,13 +24,17 @@ import {
   useHousingUnitsControllerUpdate,
 } from "@/lib/api/generated/hooks";
 import type { HousingUnitDto } from "@/lib/api/generated/types";
+import { browserTimezone, supportedTimezones } from "@/lib/time";
 
 const schema = z.object({
   name: z.string().min(1, "Name is required").max(100),
   address: z.string().min(1, "Address is required").max(200),
   description: z.string().max(2000).optional(),
+  timezone: z.string().min(1, "Timezone is required"),
 });
 type Values = z.infer<typeof schema>;
+
+const TIMEZONES = supportedTimezones();
 
 export function HouseholdFormDialog({
   trigger,
@@ -56,6 +60,7 @@ export function HouseholdFormDialog({
       name: unit?.name ?? "",
       address: unit?.address ?? "",
       description: unit?.description ?? "",
+      timezone: unit?.timezone ?? browserTimezone(),
     },
   });
 
@@ -106,6 +111,23 @@ export function HouseholdFormDialog({
           <div className="space-y-2">
             <Label htmlFor="description">Description (optional)</Label>
             <Textarea id="description" rows={3} {...register("description")} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="timezone">Timezone</Label>
+            <select
+              id="timezone"
+              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              {...register("timezone")}
+            >
+              {TIMEZONES.map((tz) => (
+                <option key={tz} value={tz}>
+                  {tz}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-muted-foreground">
+              Room hours and bookings use this timezone.
+            </p>
           </div>
           <DialogFooter>
             <Button type="submit" disabled={pending}>

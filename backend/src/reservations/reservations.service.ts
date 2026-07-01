@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import type { Prisma, Reservation, Room, User } from '@prisma/client';
 import { dateToTimeString } from '../common/time';
+import { localDayEnd, localDayStart, localMinutesOfDay } from '../common/timezone';
 import { HousingUnitsService } from '../housing-units/housing-units.service';
 import { PrismaService } from '../prisma/prisma.service';
 import type { CreateReservationDto, UpdateReservationDto } from './dto/reservation.dto';
@@ -16,13 +17,9 @@ type Author = Pick<User, 'id' | 'firstName' | 'lastName'>;
 const HOUR_MS = 3_600_000;
 const MINUTE_MS = 60_000;
 
-/** UTC minutes-since-midnight for a Date (times are interpreted in UTC). */
-function utcMinutes(d: Date): number {
+/** Wall-clock minutes-since-midnight of a Prisma TIME column (stored as UTC). */
+function timeColumnMinutes(d: Date): number {
   return d.getUTCHours() * 60 + d.getUTCMinutes();
-}
-
-function startOfUtcDay(d: Date): Date {
-  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
 }
 
 @Injectable()
@@ -34,9 +31,10 @@ export class ReservationsService {
 
   async create(userId: string, roomId: string, dto: CreateReservationDto) {
     const room = await this.getRoomForMember(userId, roomId);
+    const tz = await this.unitTimezone(room.unitId);
     const startAt = new Date(dto.startAt);
     const endAt = new Date(dto.endAt);
-    await this.validate(room, userId, startAt, endAt);
+    await this.validate(room, userId, startAt, endAt, tz);
 
     const reservation = await this.prisma.reservation.create({
       data: { roomId, userId, startAt, endAt, note: dto.note ?? null },
@@ -93,7 +91,9 @@ export class ReservationsService {
   async listMine(userId: string) {
     const reservations = await this.prisma.reservation.findMany({
       where: { userId },
-      include: { room: { include: { unit: { select: { id: true, name: true } } } } },
+      include: {
+        room: { include: { unit: { select: { id: true, name: true, timezone: true } } } },
+      },
       orderBy: { startAt: 'desc' },
     });
     return reservations.map((r) => ({
@@ -101,6 +101,7 @@ export class ReservationsService {
       roomName: r.room.name,
       unitId: r.room.unit.id,
       unitName: r.room.unit.name,
+      unitTimezone: r.room.unit.timezone,
     }));
   }
 
@@ -111,7 +112,8 @@ export class ReservationsService {
     const startAt = dto.startAt ? new Date(dto.startAt) : reservation.startAt;
     const endAt = dto.endAt ? new Date(dto.endAt) : reservation.endAt;
     if (dto.startAt || dto.endAt) {
-      await this.validate(room, userId, startAt, endAt, reservationId);
+      const tz = await this.unitTimezone(room.unitId);
+      await this.validate(room, userId, startAt, endAt, tz, reservationId);
     }
 
     const updated = await this.prisma.reservation.update({
@@ -135,6 +137,14 @@ export class ReservationsService {
 
   // ---- helpers ----
 
+  private async unitTimezone(unitId: string): Promise<string> {
+    const unit = await this.prisma.housingUnit.findUnique({
+      where: { id: unitId },
+      select: { timezone: true },
+    });
+    return unit?.timezone ?? 'UTC';
+  }
+
   private async getRoomForMember(userId: string, roomId: string): Promise<Room> {
     const room = await this.prisma.room.findUnique({ where: { id: roomId } });
     if (!room) throw new NotFoundException('Room not found');
@@ -154,29 +164,30 @@ export class ReservationsService {
     return reservation;
   }
 
-  /** Enforces the F-11 rules. Times are compared in UTC. */
+  /** Enforces the F-11 rules. Wall-clock rules use the unit's timezone. */
   private async validate(
     room: Room,
     userId: string,
     startAt: Date,
     endAt: Date,
+    tz: string,
     excludeId?: string,
   ) {
     if (endAt <= startAt) {
       throw new BadRequestException('End time must be after start time');
     }
 
-    const dayStart = startOfUtcDay(startAt);
-    const dayEnd = new Date(dayStart.getTime() + 24 * 60 * MINUTE_MS);
+    const dayStart = localDayStart(startAt, tz);
+    const dayEnd = localDayEnd(startAt, tz);
     if (endAt.getTime() > dayEnd.getTime()) {
       throw new BadRequestException('A reservation must be within a single day');
     }
 
-    // Availability window (time-of-day, UTC).
-    const startMin = utcMinutes(startAt);
-    const endMin = endAt.getTime() === dayEnd.getTime() ? 24 * 60 : utcMinutes(endAt);
-    const from = room.availableFrom ? utcMinutes(room.availableFrom) : null;
-    const to = room.availableTo ? utcMinutes(room.availableTo) : null;
+    // Availability window (local time-of-day in the unit's timezone).
+    const startMin = localMinutesOfDay(startAt, tz);
+    const endMin = endAt.getTime() === dayEnd.getTime() ? 24 * 60 : localMinutesOfDay(endAt, tz);
+    const from = room.availableFrom ? timeColumnMinutes(room.availableFrom) : null;
+    const to = room.availableTo ? timeColumnMinutes(room.availableTo) : null;
     if (from !== null && startMin < from) {
       throw new BadRequestException(`Room is only available from ${dateToTimeString(room.availableFrom)}`);
     }

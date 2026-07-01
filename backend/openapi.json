@@ -1353,6 +1353,10 @@
             "type": "string",
             "maxLength": 2000,
             "nullable": true
+          },
+          "timezone": {
+            "type": "string",
+            "maxLength": 64
           }
         },
         "required": [
@@ -1376,6 +1380,9 @@
           "description": {
             "type": "string",
             "nullable": true
+          },
+          "timezone": {
+            "type": "string"
           },
           "ownerId": {
             "type": "string",
@@ -1408,6 +1415,7 @@
           "name",
           "address",
           "description",
+          "timezone",
           "ownerId",
           "createdAt",
           "updatedAt",
@@ -1433,6 +1441,10 @@
             "type": "string",
             "maxLength": 2000,
             "nullable": true
+          },
+          "timezone": {
+            "type": "string",
+            "maxLength": 64
           }
         }
       },
@@ -1863,6 +1875,9 @@
           },
           "unitName": {
             "type": "string"
+          },
+          "unitTimezone": {
+            "type": "string"
           }
         },
         "required": [
@@ -1876,7 +1891,8 @@
           "author",
           "roomName",
           "unitId",
-          "unitName"
+          "unitName",
+          "unitTimezone"
         ]
       },
       "UpdateReservationDto": {

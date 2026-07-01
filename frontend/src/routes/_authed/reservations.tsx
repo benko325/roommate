@@ -11,19 +11,14 @@ import {
   useReservationsControllerCancel,
   useReservationsControllerMine,
 } from "@/lib/api/generated/hooks";
+import { dateLabelInTz, hhmmInTz } from "@/lib/time";
 
 export const Route = createFileRoute("/_authed/reservations")({
   component: MyReservationsPage,
 });
 
-function formatRange(startIso: string, endIso: string): string {
-  const day = new Date(startIso).toLocaleDateString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    timeZone: "UTC",
-  });
-  return `${day} · ${startIso.slice(11, 16)}–${endIso.slice(11, 16)} UTC`;
+function formatRange(startIso: string, endIso: string, tz: string): string {
+  return `${dateLabelInTz(startIso, tz)} · ${hhmmInTz(startIso, tz)}–${hhmmInTz(endIso, tz)} (${tz})`;
 }
 
 function MyReservationsPage() {
@@ -56,7 +51,7 @@ function MyReservationsPage() {
                     {r.status === "CANCELLED" && <Badge variant="outline">cancelled</Badge>}
                   </div>
                   <p className="font-mono text-sm text-muted-foreground tabular-nums">
-                    {formatRange(r.startAt, r.endAt)}
+                    {formatRange(r.startAt, r.endAt, r.unitTimezone)}
                   </p>
                   {r.note && <p className="text-sm text-muted-foreground">{r.note}</p>}
                 </div>

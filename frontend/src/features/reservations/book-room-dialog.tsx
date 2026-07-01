@@ -18,17 +18,20 @@ import {
   reservationsControllerMineQueryKey,
   useRoomReservationsControllerCreate,
 } from "@/lib/api/generated/hooks";
+import { wallToUtcIso } from "@/lib/time";
 
-/** Times are entered and shown in UTC to match the backend's rule checks. */
+/** Times are entered in the household's timezone and converted to UTC instants. */
 export function BookRoomDialog({
   roomId,
   date,
+  timezone,
   defaultFrom,
   defaultTo,
   trigger,
 }: {
   roomId: string;
-  date: string; // yyyy-mm-dd
+  date: string; // yyyy-mm-dd (local day in `timezone`)
+  timezone: string;
   defaultFrom?: string | null;
   defaultTo?: string | null;
   trigger: ReactNode;
@@ -45,8 +48,8 @@ export function BookRoomDialog({
       {
         roomId,
         data: {
-          startAt: `${date}T${start}:00.000Z`,
-          endAt: `${date}T${end}:00.000Z`,
+          startAt: wallToUtcIso(date, start, timezone),
+          endAt: wallToUtcIso(date, end, timezone),
           note: note.trim() || undefined,
         },
       },
@@ -76,14 +79,13 @@ export function BookRoomDialog({
         <DialogHeader>
           <DialogTitle>New reservation</DialogTitle>
           <DialogDescription>
-            {new Date(`${date}T00:00:00Z`).toLocaleDateString(undefined, {
+            {new Date(`${date}T00:00:00`).toLocaleDateString(undefined, {
               weekday: "long",
               month: "long",
               day: "numeric",
             })}
-            {defaultFrom && defaultTo
-              ? ` · open ${defaultFrom}–${defaultTo} (UTC)`
-              : " · times in UTC"}
+            {defaultFrom && defaultTo ? ` · open ${defaultFrom}–${defaultTo}` : ""} · times in{" "}
+            {timezone}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
