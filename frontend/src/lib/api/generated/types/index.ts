@@ -24,6 +24,7 @@ export type { AuthResponseDto, UserSystemRoleEnumKey } from "./AuthResponseDto.t
 export type { ChangePasswordDto } from "./ChangePasswordDto.ts";
 export type { CreateHousingUnitDto } from "./CreateHousingUnitDto.ts";
 export type { CreateInvitationDto } from "./CreateInvitationDto.ts";
+export type { CreateIssueDto } from "./CreateIssueDto.ts";
 export type { CreateReservationDto } from "./CreateReservationDto.ts";
 export type { CreateRoomDto } from "./CreateRoomDto.ts";
 export type { ForgotPasswordDto } from "./ForgotPasswordDto.ts";
@@ -38,6 +39,7 @@ export type { InvitationLookupDto, InvitationLookupDtoStatusEnumKey } from "./In
 export type { InvitationsControllerAccept200, InvitationsControllerAcceptMutation, InvitationsControllerAcceptMutationRequest, InvitationsControllerAcceptMutationResponse } from "./InvitationsControllerAccept.ts";
 export type { InvitationsControllerLookup200, InvitationsControllerLookupQuery, InvitationsControllerLookupQueryParams, InvitationsControllerLookupQueryResponse } from "./InvitationsControllerLookup.ts";
 export type { InvitationsControllerReject204, InvitationsControllerRejectMutation, InvitationsControllerRejectMutationRequest, InvitationsControllerRejectMutationResponse } from "./InvitationsControllerReject.ts";
+export type { IssueDto, IssueDtoStatusEnumKey } from "./IssueDto.ts";
 export type { LoginDto } from "./LoginDto.ts";
 export type { MemberDto } from "./MemberDto.ts";
 export type { MyReservationDto, MyReservationDtoStatusEnumKey } from "./MyReservationDto.ts";
@@ -62,6 +64,9 @@ export type { UnitInvitationsControllerList200, UnitInvitationsControllerListPat
 export type { UnitInvitationsControllerMembers200, UnitInvitationsControllerMembersPathParams, UnitInvitationsControllerMembersQuery, UnitInvitationsControllerMembersQueryResponse } from "./UnitInvitationsControllerMembers.ts";
 export type { UnitInvitationsControllerRemoveMember204, UnitInvitationsControllerRemoveMemberMutation, UnitInvitationsControllerRemoveMemberMutationResponse, UnitInvitationsControllerRemoveMemberPathParams } from "./UnitInvitationsControllerRemoveMember.ts";
 export type { UnitInvitationsControllerRevoke204, UnitInvitationsControllerRevokeMutation, UnitInvitationsControllerRevokeMutationResponse, UnitInvitationsControllerRevokePathParams } from "./UnitInvitationsControllerRevoke.ts";
+export type { UnitIssuesControllerCreate201, UnitIssuesControllerCreateMutation, UnitIssuesControllerCreateMutationRequest, UnitIssuesControllerCreateMutationResponse, UnitIssuesControllerCreatePathParams } from "./UnitIssuesControllerCreate.ts";
+export type { UnitIssuesControllerList200, UnitIssuesControllerListPathParams, UnitIssuesControllerListQuery, UnitIssuesControllerListQueryResponse } from "./UnitIssuesControllerList.ts";
+export type { UnitIssuesControllerResolve201, UnitIssuesControllerResolveMutation, UnitIssuesControllerResolveMutationResponse, UnitIssuesControllerResolvePathParams } from "./UnitIssuesControllerResolve.ts";
 export type { UnitReservationsControllerList200, UnitReservationsControllerListPathParams, UnitReservationsControllerListQuery, UnitReservationsControllerListQueryParams, UnitReservationsControllerListQueryResponse } from "./UnitReservationsControllerList.ts";
 export type { UpdateHousingUnitDto } from "./UpdateHousingUnitDto.ts";
 export type { UpdateProfileDto } from "./UpdateProfileDto.ts";
@@ -75,6 +80,7 @@ export { userSystemRoleEnum } from "./AuthResponseDto.ts";
 export { housingUnitDtoViewerRoleEnum } from "./HousingUnitDto.ts";
 export { invitationDtoStatusEnum } from "./InvitationDto.ts";
 export { invitationLookupDtoStatusEnum } from "./InvitationLookupDto.ts";
+export { issueDtoStatusEnum } from "./IssueDto.ts";
 export { myReservationDtoStatusEnum } from "./MyReservationDto.ts";
 export { reservationDtoStatusEnum } from "./ReservationDto.ts";
 export { updateRoleDtoSystemRoleEnum } from "./UpdateRoleDto.ts";

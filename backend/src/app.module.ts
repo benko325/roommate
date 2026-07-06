@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { validateEnv } from './config/env.schema';
 import { HousingUnitsModule } from './housing-units/housing-units.module';
 import { InvitationsModule } from './invitations/invitations.module';
+import { IssuesModule } from './issues/issues.module';
 import { MailModule } from './mail/mail.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ReservationsModule } from './reservations/reservations.module';
@@ -26,6 +27,7 @@ import { RoomsModule } from './rooms/rooms.module';
     HousingUnitsModule,
     RoomsModule,
     InvitationsModule,
+    IssuesModule,
     ReservationsModule,
     AdminModule,
   ],

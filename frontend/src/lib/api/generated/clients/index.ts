@@ -39,4 +39,7 @@ export { unitInvitationsControllerList } from "./unitInvitationsControllerList.t
 export { unitInvitationsControllerMembers } from "./unitInvitationsControllerMembers.ts";
 export { unitInvitationsControllerRemoveMember } from "./unitInvitationsControllerRemoveMember.ts";
 export { unitInvitationsControllerRevoke } from "./unitInvitationsControllerRevoke.ts";
+export { unitIssuesControllerCreate } from "./unitIssuesControllerCreate.ts";
+export { unitIssuesControllerList } from "./unitIssuesControllerList.ts";
+export { unitIssuesControllerResolve } from "./unitIssuesControllerResolve.ts";
 export { unitReservationsControllerList } from "./unitReservationsControllerList.ts";
