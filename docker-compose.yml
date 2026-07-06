@@ -41,8 +41,7 @@ services:
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASS: ${SMTP_PASS:-}
       MAIL_FROM: ${MAIL_FROM:-RoomMate <no-reply@roommate.dev>}
-    # Apply pending migrations, then start the API.
-    command: sh -c "pnpm exec prisma migrate deploy && node dist/main.js"
+    # The image's default CMD applies pending migrations, then starts the API.
     ports:
       - '3000:3000'
 

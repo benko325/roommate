@@ -28,4 +28,6 @@ RUN pnpm prisma:generate && pnpm build
 ENV NODE_ENV=production
 EXPOSE 3000
 
-CMD ["node", "dist/main.js"]
+# Migrate-on-start is the image default (see docker-start.sh), so Render and
+# compose need no command override — avoids platform shell-quoting pitfalls.
+CMD ["sh", "docker-start.sh"]
