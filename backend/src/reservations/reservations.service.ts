@@ -53,7 +53,10 @@ export class ReservationsService {
         roomId,
         status: 'ACTIVE',
         ...(from || to
-          ? { startAt: { ...(to && { lt: new Date(to) }) }, endAt: { ...(from && { gt: new Date(from) }) } }
+          ? {
+              startAt: { ...(to && { lt: new Date(to) }) },
+              endAt: { ...(from && { gt: new Date(from) }) },
+            }
           : {}),
       },
       include: { user: { select: { id: true, firstName: true, lastName: true } } },
@@ -189,17 +192,23 @@ export class ReservationsService {
     const from = room.availableFrom ? timeColumnMinutes(room.availableFrom) : null;
     const to = room.availableTo ? timeColumnMinutes(room.availableTo) : null;
     if (from !== null && startMin < from) {
-      throw new BadRequestException(`Room is only available from ${dateToTimeString(room.availableFrom)}`);
+      throw new BadRequestException(
+        `Room is only available from ${dateToTimeString(room.availableFrom)}`,
+      );
     }
     if (to !== null && endMin > to) {
-      throw new BadRequestException(`Room is only available until ${dateToTimeString(room.availableTo)}`);
+      throw new BadRequestException(
+        `Room is only available until ${dateToTimeString(room.availableTo)}`,
+      );
     }
 
     // Max length.
     if (room.maxReservationHours) {
       const hours = (endAt.getTime() - startAt.getTime()) / HOUR_MS;
       if (hours > room.maxReservationHours) {
-        throw new BadRequestException(`Reservations can be at most ${room.maxReservationHours}h long`);
+        throw new BadRequestException(
+          `Reservations can be at most ${room.maxReservationHours}h long`,
+        );
       }
     }
 
@@ -256,12 +265,7 @@ export class ReservationsService {
     }
   }
 
-  private toDto(
-    r: Reservation,
-    userId: string,
-    isMine: boolean,
-    author: Author | null = null,
-  ) {
+  private toDto(r: Reservation, userId: string, isMine: boolean, author: Author | null = null) {
     return {
       id: r.id,
       roomId: r.roomId,

@@ -117,7 +117,11 @@ export class AuthService {
     ]);
   }
 
-  async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
     const user = await this.users.findByIdWithHash(userId);
     if (!user) throw new UnauthorizedException('User not found');
     const valid = await bcrypt.compare(currentPassword, user.passwordHash);

@@ -2,9 +2,7 @@ import { createZodDto } from 'nestjs-zod';
 import { z } from 'zod';
 
 // "HH:MM" 24-hour time.
-const timeString = z
-  .string()
-  .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Use HH:MM (00:00–23:59)');
+const timeString = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Use HH:MM (00:00–23:59)');
 
 export const createRoomSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),

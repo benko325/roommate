@@ -15,11 +15,7 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import type { AuthUser } from '../auth/auth.types';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import {
-  CreateHousingUnitDto,
-  HousingUnitDto,
-  UpdateHousingUnitDto,
-} from './dto/housing-unit.dto';
+import { CreateHousingUnitDto, HousingUnitDto, UpdateHousingUnitDto } from './dto/housing-unit.dto';
 import { HousingUnitsService } from './housing-units.service';
 
 @ApiTags('housing-units')

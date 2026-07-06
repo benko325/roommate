@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import type { Issue, Reservation, Room, User } from '@prisma/client';
 import { HousingUnitsService } from '../housing-units/housing-units.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -65,19 +61,11 @@ export class IssuesService {
       });
       // Tenants only see anonymized slots (N-05), so an issue may only
       // reference the reporter's own reservation.
-      if (
-        !reservation ||
-        reservation.room.unitId !== unitId ||
-        reservation.userId !== userId
-      ) {
-        throw new BadRequestException(
-          'Reservation does not belong to you in this unit',
-        );
+      if (!reservation || reservation.room.unitId !== unitId || reservation.userId !== userId) {
+        throw new BadRequestException('Reservation does not belong to you in this unit');
       }
       if (roomId && reservation.roomId !== roomId) {
-        throw new BadRequestException(
-          'Reservation is not in the selected room',
-        );
+        throw new BadRequestException('Reservation is not in the selected room');
       }
       roomId ??= reservation.roomId;
     }

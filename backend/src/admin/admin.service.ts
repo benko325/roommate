@@ -1,8 +1,4 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import type { SystemRole } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -66,7 +62,8 @@ export class AdminService {
   }
 
   async deleteUser(actingUserId: string, userId: string) {
-    if (actingUserId === userId) throw new ConflictException("You can't delete your own account here");
+    if (actingUserId === userId)
+      throw new ConflictException("You can't delete your own account here");
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: { _count: { select: { ownedUnits: true } } },

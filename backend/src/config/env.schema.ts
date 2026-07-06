@@ -6,9 +6,7 @@ import { z } from 'zod';
  * instead of surfacing as a runtime error later.
  */
 export const envSchema = z.object({
-  NODE_ENV: z
-    .enum(['development', 'test', 'production'])
-    .default('development'),
+  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(3000),
 
   // PostgreSQL connection string used by Prisma.
