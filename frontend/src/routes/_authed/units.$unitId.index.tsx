@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { HouseholdFormDialog } from "@/features/households/household-form-dialog";
+import { IssuesPanel } from "@/features/issues/issues-panel";
 import { PeoplePanel } from "@/features/members/people-panel";
 import { RoomFormDialog } from "@/features/rooms/room-form-dialog";
 import {
@@ -109,6 +110,7 @@ function UnitDetailPage() {
         <TabsList>
           <TabsTrigger value="rooms">Rooms</TabsTrigger>
           <TabsTrigger value="people">People</TabsTrigger>
+          <TabsTrigger value="issues">Issues</TabsTrigger>
         </TabsList>
 
         <TabsContent value="rooms">
@@ -207,6 +209,10 @@ function UnitDetailPage() {
 
         <TabsContent value="people">
           <PeoplePanel unitId={unitId} isOwner={isOwner} />
+        </TabsContent>
+
+        <TabsContent value="issues">
+          <IssuesPanel unitId={unitId} isOwner={isOwner} timezone={unit.timezone} />
         </TabsContent>
       </Tabs>
     </div>

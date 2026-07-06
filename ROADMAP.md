@@ -14,12 +14,12 @@ Where the project stands and what's left. Pick any item below to continue.
 - **Email (SMTP)** — Nodemailer for invitations, with a zero-config log fallback in dev.
 - **Password reset** — forgot/reset by emailed single-use token.
 - **Admin panel** — system stats + manage users/households/reservations.
+- **Issue reporting (#35)** — members report issues (general, per-room, or tied to their own reservation) → owner sees & resolves. `Issue` entity + `/housing-units/:unitId/issues` endpoints, Issues tab on the unit page, "Report issue" on My Reservations.
 - **Seed data** — `pnpm --filter @roommate/backend db:seed` (demo users, password `password123`).
 
 ## 🚧 Remaining
 
 ### Medium priority
-- **#35 Issue reporting to owner** — members report issues (tied to a reservation/room, or general) → owner sees & resolves. New `Issue` entity (unitId, reporterId, optional roomId/reservationId, message, status OPEN/RESOLVED) → module + Zod DTOs → regenerate Kubb client → report form (member) + issues list (owner).
 - **#30 Automated tests** — highest-value target is the reservation rule engine (backend unit/e2e); plus frontend component/route tests (Vitest + Testing Library). Replaces the throwaway smoke scripts used during development.
 - **#31 CI pipeline** — GitHub Actions: install + lint + check-types + build + tests for backend and frontend on each PR.
 
@@ -34,7 +34,7 @@ Where the project stands and what's left. Pick any item below to continue.
 - SMTP is optional — without `SMTP_HOST`, invitation/reset links are logged to the backend console.
 
 ## Suggested next step
-**#30 tests + #31 CI** to lock in everything built so far, or **#35 issue reporting** for another user-facing feature.
+**#30 tests + #31 CI** to lock in everything built so far.
 
 ## How to run
 ```bash

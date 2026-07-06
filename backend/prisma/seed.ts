@@ -21,6 +21,7 @@ function at(dayOffset: number, h: number, m = 0): Date {
 
 async function main() {
   // Wipe existing data (dev only), respecting FK order.
+  await prisma.issue.deleteMany();
   await prisma.reservation.deleteMany();
   await prisma.invitation.deleteMany();
   await prisma.unitMembership.deleteMany();
@@ -115,6 +116,25 @@ async function main() {
       { roomId: kitchen.id, userId: alice.id, startAt: at(0, 12), endAt: at(0, 13), note: 'Lunch' },
       { roomId: laundry.id, userId: carol.id, startAt: at(0, 10), endAt: at(0, 13), note: 'Bedding' },
       { roomId: hotTub.id, userId: alice.id, startAt: at(0, 20), endAt: at(0, 21) },
+    ],
+  });
+
+  // Issues reported to the Sunny Flat owner: one open per-room, one resolved general.
+  await prisma.issue.createMany({
+    data: [
+      {
+        unitId: sunny.id,
+        reporterId: bob.id,
+        roomId: bathroom.id,
+        message: 'The shower drain is clogged — water pools up after a few minutes.',
+      },
+      {
+        unitId: sunny.id,
+        reporterId: carol.id,
+        message: 'Hallway light bulb burned out.',
+        status: 'RESOLVED',
+        resolvedAt: at(0, 9),
+      },
     ],
   });
 

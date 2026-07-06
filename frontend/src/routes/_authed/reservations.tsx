@@ -1,11 +1,12 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CalendarClock } from "lucide-react";
+import { CalendarClock, MessageSquareWarning } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ReportIssueDialog } from "@/features/issues/report-issue-dialog";
 import {
   reservationsControllerMineQueryKey,
   useReservationsControllerCancel,
@@ -55,28 +56,43 @@ function MyReservationsPage() {
                   </p>
                   {r.note && <p className="text-sm text-muted-foreground">{r.note}</p>}
                 </div>
-                {r.status === "ACTIVE" && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-destructive"
-                    onClick={() =>
-                      cancel.mutate(
-                        { id: r.id },
-                        {
-                          onSuccess: () => {
-                            queryClient.invalidateQueries({
-                              queryKey: reservationsControllerMineQueryKey(),
-                            });
-                            toast.success("Reservation cancelled");
-                          },
-                        },
-                      )
+                <div className="flex shrink-0 items-center gap-1">
+                  <ReportIssueDialog
+                    unitId={r.unitId}
+                    reservation={{
+                      id: r.id,
+                      roomName: r.roomName,
+                      label: formatRange(r.startAt, r.endAt, r.unitTimezone),
+                    }}
+                    trigger={
+                      <Button variant="ghost" size="sm" aria-label="Report issue">
+                        <MessageSquareWarning className="size-4" /> Report issue
+                      </Button>
                     }
-                  >
-                    Cancel
-                  </Button>
-                )}
+                  />
+                  {r.status === "ACTIVE" && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive"
+                      onClick={() =>
+                        cancel.mutate(
+                          { id: r.id },
+                          {
+                            onSuccess: () => {
+                              queryClient.invalidateQueries({
+                                queryKey: reservationsControllerMineQueryKey(),
+                              });
+                              toast.success("Reservation cancelled");
+                            },
+                          },
+                        )
+                      }
+                    >
+                      Cancel
+                    </Button>
+                  )}
+                </div>
               </CardContent>
             </Card>
           ))

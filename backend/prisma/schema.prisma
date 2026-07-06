@@ -29,6 +29,11 @@ enum InvitationStatus {
   EXPIRED
 }
 
+enum IssueStatus {
+  OPEN
+  RESOLVED
+}
+
 /// A registered person. `systemRole` only distinguishes ADMIN from a regular
 /// USER — the owner/tenant roles are derived from relationships, not stored here.
 model User {
@@ -46,6 +51,7 @@ model User {
   reservations        Reservation[]
   refreshTokens       RefreshToken[]
   passwordResetTokens PasswordResetToken[]
+  reportedIssues      Issue[]
 
   @@map("users")
 }
@@ -98,6 +104,7 @@ model HousingUnit {
   memberships UnitMembership[]
   rooms       Room[]
   invitations Invitation[]
+  issues      Issue[]
 
   @@index([ownerId])
   @@map("housing_units")
@@ -134,6 +141,7 @@ model Room {
 
   unit         HousingUnit   @relation(fields: [unitId], references: [id], onDelete: Cascade)
   reservations Reservation[]
+  issues       Issue[]
 
   @@index([unitId])
   @@map("rooms")
@@ -154,13 +162,37 @@ model Reservation {
   updatedAt DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   // RESTRICT: preserve authorship of reservations; cancel instead of deleting the user.
-  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  room   Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user   User    @relation(fields: [userId], references: [id], onDelete: Restrict)
+  issues Issue[]
 
   // Overlap lookups (only ACTIVE rows matter) — filtered index added in migration.
   @@index([roomId, startAt, endAt])
   @@index([userId, startAt])
   @@map("reservations")
+}
+
+/// A problem reported to the unit owner by a member (F-scope extension #35).
+/// Optionally tied to a room and/or one of the reporter's reservations; both
+/// links are SET NULL so deleting a room keeps the issue history readable.
+model Issue {
+  id            String      @id @default(uuid()) @db.Uuid
+  unitId        String      @map("unit_id") @db.Uuid
+  reporterId    String      @map("reporter_id") @db.Uuid
+  roomId        String?     @map("room_id") @db.Uuid
+  reservationId String?     @map("reservation_id") @db.Uuid
+  message       String      @db.VarChar(1000)
+  status        IssueStatus @default(OPEN)
+  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  resolvedAt    DateTime?   @map("resolved_at") @db.Timestamptz(6)
+
+  unit        HousingUnit  @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  reporter    User         @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+  room        Room?        @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  reservation Reservation? @relation(fields: [reservationId], references: [id], onDelete: SetNull)
+
+  @@index([unitId, status], map: "ix_issue_unit_status")
+  @@map("issues")
 }
 
 /// An invitation of an email address into a unit. `token` allows accepting via

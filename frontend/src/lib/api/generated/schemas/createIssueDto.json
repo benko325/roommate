@@ -1,0 +1,1 @@
+{"type":"object","properties":{"message":{"type":"string","minLength":1,"maxLength":1000},"roomId":{"type":"string","format":"uuid"},"reservationId":{"type":"string","format":"uuid"}},"required":["message"],"x-readme-ref-name":"CreateIssueDto"}
