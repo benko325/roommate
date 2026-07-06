@@ -6,10 +6,7 @@ import { PrismaClient } from '@prisma/client';
  * Nest module lifecycle. Inject this anywhere DB access is needed.
  */
 @Injectable()
-export class PrismaService
-  extends PrismaClient
-  implements OnModuleInit, OnModuleDestroy
-{
+export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   async onModuleInit(): Promise<void> {
     await this.$connect();
   }

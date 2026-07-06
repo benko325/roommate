@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: roommate
+          POSTGRES_PASSWORD: roommate
+          POSTGRES_DB: roommate_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U roommate"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      # Matches the e2e suite's default test-database URL (test/test-db.ts).
+      DATABASE_URL: postgresql://roommate:roommate@localhost:5432/roommate_test?schema=public
+      JWT_SECRET: ci-only-secret-not-for-production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4 # version comes from packageManager in package.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm --filter @roommate/backend prisma:generate
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Type-check
+        run: pnpm check-types
+
+      - name: Build
+        run: pnpm build
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Backend e2e tests
+        run: pnpm --filter @roommate/backend test:e2e

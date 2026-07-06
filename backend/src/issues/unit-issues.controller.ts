@@ -1,18 +1,5 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  ParseUUIDPipe,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { AuthUser } from '../auth/auth.types';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -42,10 +29,7 @@ export class UnitIssuesController {
   @Get()
   @ApiOperation({ summary: 'List issues (owner sees all, member sees own)' })
   @ApiResponse({ status: 200, type: [IssueDto] })
-  list(
-    @CurrentUser() user: AuthUser,
-    @Param('unitId', ParseUUIDPipe) unitId: string,
-  ) {
+  list(@CurrentUser() user: AuthUser, @Param('unitId', ParseUUIDPipe) unitId: string) {
     return this.issues.list(user.id, unitId);
   }
 

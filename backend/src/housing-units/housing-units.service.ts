@@ -1,14 +1,7 @@
-import {
-  ForbiddenException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import type { HousingUnit } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import type {
-  CreateHousingUnitDto,
-  UpdateHousingUnitDto,
-} from './dto/housing-unit.dto';
+import type { CreateHousingUnitDto, UpdateHousingUnitDto } from './dto/housing-unit.dto';
 
 export type ViewerRole = 'OWNER' | 'MEMBER';
 
@@ -114,11 +107,7 @@ export class HousingUnitsService {
     return this.resolveRole(userId, unit.ownerId, unitId);
   }
 
-  private async resolveRole(
-    userId: string,
-    ownerId: string,
-    unitId: string,
-  ): Promise<ViewerRole> {
+  private async resolveRole(userId: string, ownerId: string, unitId: string): Promise<ViewerRole> {
     if (ownerId === userId) return 'OWNER';
     const membership = await this.prisma.unitMembership.findUnique({
       where: { unitId_userId: { unitId, userId } },

@@ -14,11 +14,7 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import type { AuthUser } from '../auth/auth.types';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import {
-  MyReservationDto,
-  ReservationDto,
-  UpdateReservationDto,
-} from './dto/reservation.dto';
+import { MyReservationDto, ReservationDto, UpdateReservationDto } from './dto/reservation.dto';
 import { ReservationsService } from './reservations.service';
 
 @ApiTags('reservations')

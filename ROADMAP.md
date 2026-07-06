@@ -16,12 +16,10 @@ Where the project stands and what's left. Pick any item below to continue.
 - **Admin panel** — system stats + manage users/households/reservations.
 - **Issue reporting (#35)** — members report issues (general, per-room, or tied to their own reservation) → owner sees & resolves. `Issue` entity + `/housing-units/:unitId/issues` endpoints, Issues tab on the unit page, "Report issue" on My Reservations.
 - **Seed data** — `pnpm --filter @roommate/backend db:seed` (demo users, password `password123`).
+- **Tests (#30)** — backend unit tests (reservation rule engine incl. timezones/DST, issues authorization) + e2e suite over HTTP against a `roommate_test` database (`test:e2e`), frontend Vitest + Testing Library (time helpers, report-issue dialog).
+- **CI (#31)** — GitHub Actions on each PR/push to main: install → prisma generate → lint → check-types → build → unit tests → e2e (with a Postgres service).
 
 ## 🚧 Remaining
-
-### Medium priority
-- **#30 Automated tests** — highest-value target is the reservation rule engine (backend unit/e2e); plus frontend component/route tests (Vitest + Testing Library). Replaces the throwaway smoke scripts used during development.
-- **#31 CI pipeline** — GitHub Actions: install + lint + check-types + build + tests for backend and frontend on each PR.
 
 ### Low priority
 - **#32 Deployment** — Dockerfiles for backend/frontend, prod compose/config, migrate-on-deploy, a hosting target.
@@ -30,11 +28,10 @@ Where the project stands and what's left. Pick any item below to continue.
 
 ## Notes / known simplifications
 - Reservation times are handled per-household timezone (default UTC). Existing seed rows created before the timezone migration are `UTC` until edited or re-seeded.
-- No automated tests yet (only manual smoke tests during development).
 - SMTP is optional — without `SMTP_HOST`, invitation/reset links are logged to the backend console.
 
 ## Suggested next step
-**#30 tests + #31 CI** to lock in everything built so far.
+**#32 deployment** to get it hosted, or **#33 UI polish** for a rounder demo.
 
 ## How to run
 ```bash
