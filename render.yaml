@@ -9,9 +9,8 @@ services:
     plan: free
     dockerfilePath: ./backend/Dockerfile
     dockerContext: .
-    # Migrate-on-deploy. (Render's dedicated preDeployCommand needs a paid
-    # instance, so on the free tier migrations run in the start command.)
-    dockerCommand: sh -c "pnpm exec prisma migrate deploy && node dist/main.js"
+    # Migrate-on-deploy happens in the image's default CMD (docker-start.sh),
+    # so no dockerCommand override is needed here.
     healthCheckPath: /
     envVars:
       - key: NODE_ENV
