@@ -1,0 +1,24 @@
+# Render blueprint for the RoomMate API (free tier).
+# The database lives on Neon (Render's free Postgres expires after 30 days);
+# the frontend lives on Vercel. See DEPLOYMENT.md for the full walkthrough.
+
+services:
+  - type: web
+    name: roommate-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    # Migrate-on-deploy. (Render's dedicated preDeployCommand needs a paid
+    # instance, so on the free tier migrations run in the start command.)
+    dockerCommand: sh -c "pnpm exec prisma migrate deploy && node dist/main.js"
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false # paste the Neon connection string in the dashboard
+      - key: FRONTEND_URL
+        sync: false # your Vercel URL, e.g. https://roommate.vercel.app

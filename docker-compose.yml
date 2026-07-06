@@ -1,0 +1,62 @@
+# Self-hosted RoomMate: Postgres + API + frontend in one stack.
+#
+#   JWT_SECRET=<random-32-chars> docker compose up --build
+#
+# Frontend: http://localhost:8080 · API + Swagger: http://localhost:3000/docs
+# Migrations run automatically before the API starts (migrate-on-deploy).
+# For a real server, put real values in a .env file next to this compose file
+# (JWT_SECRET, POSTGRES_PASSWORD, VITE_API_URL/FRONTEND_URL with your domain,
+# and the SMTP_* variables if you want real email).
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: roommate
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-roommate}
+      POSTGRES_DB: roommate
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U roommate']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://roommate:${POSTGRES_PASSWORD:-roommate}@db:5432/roommate?schema=public
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET (min 16 chars)}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8080}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      MAIL_FROM: ${MAIL_FROM:-RoomMate <no-reply@roommate.dev>}
+    # Apply pending migrations, then start the API.
+    command: sh -c "pnpm exec prisma migrate deploy && node dist/main.js"
+    ports:
+      - '3000:3000'
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        # Baked into the static bundle — must be the URL browsers can reach.
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
+    depends_on:
+      - backend
+    ports:
+      - '8080:80'
+
+volumes:
+  db-data:
