@@ -4,6 +4,12 @@ A responsive web app for managing shared housing and reserving common rooms
 (kitchen, bathroom, laundry, living room) in flats, houses, and dorms. Helps
 housemates coordinate use of shared spaces and avoid conflicts.
 
+**Live demo:** [roommate-frontend-roan.vercel.app](https://roommate-frontend-roan.vercel.app) ·
+API docs (Swagger): [roommate-api.onrender.com/docs](https://roommate-api.onrender.com/docs)
+
+> Hosted on free tiers — the API spins down when idle, so the first request
+> after a while can take ~30–60 s.
+
 ## Roles
 
 - **Admin** — full access to all users, units, rooms, invitations, and reservations.
@@ -53,4 +59,21 @@ an invitation, and reservations. Log in with any of
 `alice@roommate.dev`, `bob@roommate.dev`, `carol@roommate.dev`,
 `dave@roommate.dev` — password `password123`.
 
-> Scaffolding in progress — the frontend app is added after the backend milestone.
+### Tests & CI
+
+```bash
+pnpm test                                   # unit tests (Vitest)
+pnpm --filter @roommate/backend test:e2e    # backend e2e tests
+pnpm lint                                   # Biome
+pnpm check-types                            # TypeScript
+```
+
+GitHub Actions (`.github/workflows/ci.yml`) runs lint, type-checks, build,
+and both test suites on every PR and push to `main`.
+
+## Deployment
+
+Production runs on free tiers: **Vercel** (frontend) + **Render** (API, Docker)
++ **Neon** (Postgres). Every push to `main` auto-deploys. Self-hosting via
+`docker compose up` is also supported. See [DEPLOYMENT.md](DEPLOYMENT.md) for
+the full walkthrough, environment variables, and known gotchas.

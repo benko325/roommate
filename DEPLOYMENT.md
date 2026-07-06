@@ -1,5 +1,13 @@
 # Deployment
 
+**Current production (deployed 2026-07-06):**
+
+- Frontend (Vercel): https://roommate-frontend-roan.vercel.app
+- API (Render): https://roommate-api.onrender.com — Swagger at `/docs`
+- Database: Neon Postgres (connection string lives in Render's `DATABASE_URL`)
+
+Pushes to `main` auto-deploy both Render and Vercel.
+
 Two supported paths:
 
 - **Free hosting** — Neon (Postgres) + Render (API) + Vercel (frontend). No credit card, deploys from GitHub on every push to `main`.
@@ -23,7 +31,9 @@ All three sign-ins work with your GitHub account. Order matters (each step needs
    - `DATABASE_URL` → paste the Neon connection string
    - `FRONTEND_URL` → leave a placeholder for now (you'll get the real URL from Vercel in step 3), e.g. `https://roommate.vercel.app`
    - `JWT_SECRET` is generated automatically
-3. Deploy. Pending migrations run automatically before the API starts (see `dockerCommand` in `render.yaml`). Your API URL will look like `https://roommate-api-XXXX.onrender.com` — check `<api-url>/docs` renders Swagger.
+3. Deploy. Pending migrations run automatically before the API starts (the image's default command, `backend/docker-start.sh`, runs `prisma migrate deploy` then boots the app). Your API URL will look like `https://roommate-api-XXXX.onrender.com` — check `<api-url>/docs` renders Swagger.
+
+   > **Gotcha:** don't set a *Docker Command* override on the service (dashboard → Settings). Render executes it without a shell, so anything with `&&` fails with exit 127 — and a value once set via blueprint or dashboard **persists even after removing `dockerCommand` from `render.yaml`**; it must be cleared manually in the dashboard. The image CMD handles everything.
 4. Optional (real email): add `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS` env vars; without them invitation/reset links are logged to the Render console.
 
 ### 3. Vercel — frontend (~3 min)
@@ -35,7 +45,7 @@ All three sign-ins work with your GitHub account. Order matters (each step needs
 
 ### 4. Close the loop
 
-1. Back in Render → Environment → set `FRONTEND_URL` to the real Vercel URL (fixes CORS and the links in invitation/reset emails). Save triggers a redeploy.
+1. Back in Render → Environment → set `FRONTEND_URL` to the real Vercel URL **without a trailing slash** — CORS compares it byte-for-byte against the browser's `Origin` header (see `backend/src/main.ts`), so `.../` silently fails. This also fixes the links in invitation/reset emails. Save triggers a redeploy.
 2. Optionally seed demo data from your machine against Neon:
    ```bash
    DATABASE_URL='<neon-connection-string>' pnpm --filter @roommate/backend db:seed
