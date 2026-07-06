@@ -1,22 +1,29 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CalendarClock, MessageSquareWarning } from "lucide-react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { PaginationControls } from "@/components/pagination-controls";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ReportIssueDialog } from "@/features/issues/report-issue-dialog";
 import {
   reservationsControllerMineQueryKey,
   useReservationsControllerCancel,
   useReservationsControllerMine,
 } from "@/lib/api/generated/hooks";
+import type { MyReservationDto } from "@/lib/api/generated/types";
 import { dateLabelInTz, hhmmInTz } from "@/lib/time";
+import { usePagination } from "@/lib/use-pagination";
 
 export const Route = createFileRoute("/_authed/reservations")({
   component: MyReservationsPage,
 });
+
+const PAGE_SIZE = 8;
 
 function formatRange(startIso: string, endIso: string, tz: string): string {
   return `${dateLabelInTz(startIso, tz)} · ${hhmmInTz(startIso, tz)}–${hhmmInTz(endIso, tz)} (${tz})`;
@@ -24,19 +31,59 @@ function formatRange(startIso: string, endIso: string, tz: string): string {
 
 function MyReservationsPage() {
   const { data: reservations, isLoading } = useReservationsControllerMine();
-  const cancel = useReservationsControllerCancel();
   const queryClient = useQueryClient();
+  const [status, setStatus] = useState<"ALL" | "ACTIVE" | "CANCELLED">("ALL");
+
+  // Cancel flips the card to "cancelled" immediately and rolls back on error.
+  const cancel = useReservationsControllerCancel({
+    mutation: {
+      onMutate: async ({ id }) => {
+        await queryClient.cancelQueries({ queryKey: reservationsControllerMineQueryKey() });
+        const previous = queryClient.getQueryData<MyReservationDto[]>(
+          reservationsControllerMineQueryKey(),
+        );
+        queryClient.setQueryData<MyReservationDto[]>(reservationsControllerMineQueryKey(), (old) =>
+          old?.map((r) => (r.id === id ? { ...r, status: "CANCELLED" } : r)),
+        );
+        return { previous };
+      },
+      onSuccess: () => toast.success("Reservation cancelled"),
+      onError: (_err, _vars, ctx) => {
+        if (ctx?.previous) {
+          queryClient.setQueryData(reservationsControllerMineQueryKey(), ctx.previous);
+        }
+        toast.error("Could not cancel reservation");
+      },
+      onSettled: () => {
+        queryClient.invalidateQueries({ queryKey: reservationsControllerMineQueryKey() });
+      },
+    },
+  });
+
+  const filtered = useMemo(
+    () => (reservations ?? []).filter((r) => status === "ALL" || r.status === status),
+    [reservations, status],
+  );
+  const { page, setPage, pageCount, pageItems } = usePagination(filtered, PAGE_SIZE);
 
   return (
     <div>
       <h1 className="font-display text-3xl font-bold tracking-tight">My reservations</h1>
       <p className="mt-1 text-muted-foreground">Everything you've booked across your households.</p>
 
-      <div className="mt-6 space-y-2">
+      <Tabs value={status} onValueChange={(v) => setStatus(v as typeof status)} className="mt-6">
+        <TabsList>
+          <TabsTrigger value="ALL">All</TabsTrigger>
+          <TabsTrigger value="ACTIVE">Active</TabsTrigger>
+          <TabsTrigger value="CANCELLED">Cancelled</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      <div className="mt-4 space-y-2">
         {isLoading ? (
           [0, 1, 2].map((i) => <Skeleton key={i} className="h-16 rounded-xl" />)
-        ) : reservations && reservations.length > 0 ? (
-          reservations.map((r) => (
+        ) : pageItems.length > 0 ? (
+          pageItems.map((r) => (
             <Card key={r.id}>
               <CardContent className="flex items-center justify-between p-4">
                 <div>
@@ -75,19 +122,7 @@ function MyReservationsPage() {
                       variant="ghost"
                       size="sm"
                       className="text-destructive"
-                      onClick={() =>
-                        cancel.mutate(
-                          { id: r.id },
-                          {
-                            onSuccess: () => {
-                              queryClient.invalidateQueries({
-                                queryKey: reservationsControllerMineQueryKey(),
-                              });
-                              toast.success("Reservation cancelled");
-                            },
-                          },
-                        )
-                      }
+                      onClick={() => cancel.mutate({ id: r.id })}
                     >
                       Cancel
                     </Button>
@@ -101,11 +136,14 @@ function MyReservationsPage() {
             <CardContent className="flex flex-col items-center gap-2 py-12 text-center">
               <CalendarClock className="size-6 text-honey" />
               <p className="text-sm text-muted-foreground">
-                No reservations yet. Open a room to book a slot.
+                {status === "ALL"
+                  ? "No reservations yet. Open a room to book a slot."
+                  : `No ${status.toLowerCase()} reservations.`}
               </p>
             </CardContent>
           </Card>
         )}
+        <PaginationControls page={page} pageCount={pageCount} onPageChange={setPage} />
       </div>
     </div>
   );
