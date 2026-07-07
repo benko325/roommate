@@ -1,5 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import type { SystemRole } from '@prisma/client';
+import { apiError } from '../common/api-error';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -54,24 +55,31 @@ export class AdminService {
 
   async setUserRole(actingUserId: string, userId: string, systemRole: SystemRole) {
     if (actingUserId === userId && systemRole !== 'ADMIN') {
-      throw new ConflictException("You can't remove your own admin role");
+      throw new ConflictException(
+        apiError('cannot_remove_own_admin', "You can't remove your own admin role"),
+      );
     }
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user) throw new NotFoundException('User not found');
+    if (!user) throw new NotFoundException(apiError('user_not_found', 'User not found'));
     await this.prisma.user.update({ where: { id: userId }, data: { systemRole } });
   }
 
   async deleteUser(actingUserId: string, userId: string) {
     if (actingUserId === userId)
-      throw new ConflictException("You can't delete your own account here");
+      throw new ConflictException(
+        apiError('cannot_delete_self', "You can't delete your own account here"),
+      );
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: { _count: { select: { ownedUnits: true } } },
     });
-    if (!user) throw new NotFoundException('User not found');
+    if (!user) throw new NotFoundException(apiError('user_not_found', 'User not found'));
     if (user._count.ownedUnits > 0) {
       throw new ConflictException(
-        'This user still owns households — delete or reassign those first',
+        apiError(
+          'user_owns_units',
+          'This user still owns households — delete or reassign those first',
+        ),
       );
     }
     await this.prisma.user.delete({ where: { id: userId } });
@@ -99,7 +107,7 @@ export class AdminService {
 
   async deleteUnit(unitId: string) {
     const unit = await this.prisma.housingUnit.findUnique({ where: { id: unitId } });
-    if (!unit) throw new NotFoundException('Housing unit not found');
+    if (!unit) throw new NotFoundException(apiError('unit_not_found', 'Housing unit not found'));
     await this.prisma.housingUnit.delete({ where: { id: unitId } });
   }
 
@@ -125,7 +133,8 @@ export class AdminService {
 
   async deleteReservation(reservationId: string) {
     const reservation = await this.prisma.reservation.findUnique({ where: { id: reservationId } });
-    if (!reservation) throw new NotFoundException('Reservation not found');
+    if (!reservation)
+      throw new NotFoundException(apiError('reservation_not_found', 'Reservation not found'));
     await this.prisma.reservation.delete({ where: { id: reservationId } });
   }
 }

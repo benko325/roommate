@@ -10,6 +10,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { apiError } from '../common/api-error';
+import { type Locale, RequestLocale } from '../common/request-locale.decorator';
 import { UsersService } from '../users/users.service';
 import type { AuthUser } from './auth.types';
 import { AuthService } from './auth.service';
@@ -72,8 +74,8 @@ export class AuthController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Request a password-reset email' })
   @ApiResponse({ status: 204, description: 'Always succeeds (no email disclosure)' })
-  forgotPassword(@Body() dto: ForgotPasswordDto) {
-    return this.auth.forgotPassword(dto.email);
+  forgotPassword(@Body() dto: ForgotPasswordDto, @RequestLocale() locale: Locale) {
+    return this.auth.forgotPassword(dto.email, locale);
   }
 
   @Post('reset-password')
@@ -93,7 +95,7 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Not authenticated' })
   async me(@CurrentUser() user: AuthUser) {
     const found = await this.users.findById(user.id);
-    if (!found) throw new NotFoundException('User no longer exists');
+    if (!found) throw new NotFoundException(apiError('user_not_found', 'User no longer exists'));
     return found;
   }
 

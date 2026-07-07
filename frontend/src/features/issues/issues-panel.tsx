@@ -13,9 +13,10 @@ import {
 } from "@/lib/api/generated/hooks";
 import type { IssueDto } from "@/lib/api/generated/types";
 import { dateLabelInTz, hhmmInTz } from "@/lib/time";
+import { m } from "@/paraglide/messages";
 
 function issueContext(issue: IssueDto, timezone: string): string {
-  const parts: string[] = [issue.roomName ?? "General"];
+  const parts: string[] = [issue.roomName ?? m.issue_general()];
   if (issue.reservationStartAt && issue.reservationEndAt) {
     parts.push(
       `${dateLabelInTz(issue.reservationStartAt, timezone)} ${hhmmInTz(issue.reservationStartAt, timezone)}–${hhmmInTz(issue.reservationEndAt, timezone)}`,
@@ -41,15 +42,13 @@ export function IssuesPanel({
     <div>
       <div className="mb-4 flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          {isOwner
-            ? "Problems reported by your household."
-            : "Your reports to the owner of this household."}
+          {isOwner ? m.issues_intro_owner() : m.issues_intro_member()}
         </p>
         <ReportIssueDialog
           unitId={unitId}
           trigger={
             <Button size="sm">
-              <Plus className="size-4" /> Report issue
+              <Plus className="size-4" /> {m.report_issue_button()}
             </Button>
           }
         />
@@ -64,13 +63,13 @@ export function IssuesPanel({
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant={issue.status === "OPEN" ? "default" : "outline"}>
-                    {issue.status === "OPEN" ? "Open" : "Resolved"}
+                    {issue.status === "OPEN" ? m.issue_status_open() : m.issue_status_resolved()}
                   </Badge>
                   <span className="font-mono text-xs text-muted-foreground">
                     {issueContext(issue, timezone)}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    · {isOwner ? issue.reporterName : "you"},{" "}
+                    · {isOwner ? issue.reporterName : m.issue_by_you()},{" "}
                     {dateLabelInTz(issue.createdAt, timezone)}
                   </span>
                 </div>
@@ -90,13 +89,13 @@ export function IssuesPanel({
                           queryClient.invalidateQueries({
                             queryKey: unitIssuesControllerListQueryKey(unitId),
                           });
-                          toast.success("Issue resolved");
+                          toast.success(m.issue_resolved_toast());
                         },
                       },
                     )
                   }
                 >
-                  <CheckCircle2 className="size-4" /> Resolve
+                  <CheckCircle2 className="size-4" /> {m.resolve_button()}
                 </Button>
               )}
             </div>
@@ -107,7 +106,7 @@ export function IssuesPanel({
           <CardContent className="flex flex-col items-center gap-2 py-12 text-center">
             <MessageSquareWarning className="size-6 text-honey" />
             <p className="text-sm text-muted-foreground">
-              {isOwner ? "No issues reported. Enjoy the calm." : "Nothing reported yet."}
+              {isOwner ? m.issues_empty_owner() : m.issues_empty_member()}
             </p>
           </CardContent>
         </Card>

@@ -20,6 +20,7 @@ import {
   useRoomsControllerRemove,
 } from "@/lib/api/generated/hooks";
 import type { RoomDto } from "@/lib/api/generated/types";
+import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/_authed/units/$unitId/")({
   component: UnitDetailPage,
@@ -28,11 +29,12 @@ export const Route = createFileRoute("/_authed/units/$unitId/")({
 function roomRules(room: RoomDto): string {
   const parts: string[] = [];
   if (room.maxReservationHours) parts.push(`≤${room.maxReservationHours}h`);
-  if (room.maxReservationsPerDay) parts.push(`${room.maxReservationsPerDay}/day`);
-  if (room.minGapMinutes) parts.push(`${room.minGapMinutes}m gap`);
+  if (room.maxReservationsPerDay)
+    parts.push(m.room_rule_per_day({ count: room.maxReservationsPerDay }));
+  if (room.minGapMinutes) parts.push(m.room_rule_gap({ minutes: room.minGapMinutes }));
   if (room.availableFrom && room.availableTo)
     parts.push(`${room.availableFrom}–${room.availableTo}`);
-  return parts.length ? parts.join(" · ") : "No limits";
+  return parts.length ? parts.join(" · ") : m.room_rule_no_limits();
 }
 
 function UnitDetailPage() {
@@ -53,7 +55,7 @@ function UnitDetailPage() {
     <div>
       <Button variant="ghost" size="sm" asChild className="mb-4 -ml-2">
         <Link to="/dashboard">
-          <ArrowLeft className="size-4" /> All households
+          <ArrowLeft className="size-4" /> {m.unit_back_link()}
         </Link>
       </Button>
 
@@ -62,7 +64,7 @@ function UnitDetailPage() {
           <div className="flex items-center gap-3">
             <h1 className="font-display text-3xl font-bold tracking-tight">{unit.name}</h1>
             <Badge variant={isOwner ? "default" : "secondary"}>
-              {isOwner ? "Owner" : "Member"}
+              {isOwner ? m.role_owner() : m.role_member()}
             </Badge>
           </div>
           <p className="mt-1 text-muted-foreground">
@@ -76,13 +78,13 @@ function UnitDetailPage() {
               unit={unit}
               trigger={
                 <Button variant="outline" size="sm">
-                  <Pencil className="size-4" /> Edit
+                  <Pencil className="size-4" /> {m.edit_button()}
                 </Button>
               }
             />
             <ConfirmDialog
-              title="Delete this household?"
-              description="This permanently removes the household, its rooms, and all reservations."
+              title={m.unit_delete_title()}
+              description={m.admin_unit_delete_description()}
               onConfirm={() =>
                 removeUnit.mutate(
                   { id: unitId },
@@ -98,7 +100,7 @@ function UnitDetailPage() {
               }
               trigger={
                 <Button variant="ghost" size="sm" className="text-destructive">
-                  <Trash2 className="size-4" /> Delete
+                  <Trash2 className="size-4" /> {m.delete_button()}
                 </Button>
               }
             />
@@ -108,9 +110,9 @@ function UnitDetailPage() {
 
       <Tabs defaultValue="rooms" className="mt-8">
         <TabsList>
-          <TabsTrigger value="rooms">Rooms</TabsTrigger>
-          <TabsTrigger value="people">People</TabsTrigger>
-          <TabsTrigger value="issues">Issues</TabsTrigger>
+          <TabsTrigger value="rooms">{m.unit_tab_rooms()}</TabsTrigger>
+          <TabsTrigger value="people">{m.unit_tab_people()}</TabsTrigger>
+          <TabsTrigger value="issues">{m.unit_tab_issues()}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="rooms">
@@ -120,7 +122,7 @@ function UnitDetailPage() {
                 unitId={unitId}
                 trigger={
                   <Button size="sm">
-                    <Plus className="size-4" /> Add room
+                    <Plus className="size-4" /> {m.add_room_button()}
                   </Button>
                 }
               />
@@ -146,14 +148,14 @@ function UnitDetailPage() {
                             unitId={unitId}
                             room={room}
                             trigger={
-                              <Button variant="ghost" size="icon" aria-label="Edit room">
+                              <Button variant="ghost" size="icon" aria-label={m.edit_room_aria()}>
                                 <Pencil className="size-4" />
                               </Button>
                             }
                           />
                           <ConfirmDialog
-                            title={`Delete ${room.name}?`}
-                            description="This removes the room and its reservations."
+                            title={m.room_delete_title({ name: room.name })}
+                            description={m.room_delete_description()}
                             onConfirm={() =>
                               removeRoom.mutate(
                                 { unitId, roomId: room.id },
@@ -169,7 +171,7 @@ function UnitDetailPage() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                aria-label="Delete room"
+                                aria-label={m.delete_room_aria()}
                                 className="text-destructive"
                               >
                                 <Trash2 className="size-4" />
@@ -188,7 +190,7 @@ function UnitDetailPage() {
                     </p>
                     <Button variant="outline" size="sm" asChild className="mt-4 w-full">
                       <Link to="/units/$unitId/rooms/$roomId" params={{ unitId, roomId: room.id }}>
-                        View availability
+                        {m.view_availability_button()}
                       </Link>
                     </Button>
                   </CardContent>
@@ -200,7 +202,7 @@ function UnitDetailPage() {
               <CardContent className="flex flex-col items-center gap-2 py-12 text-center">
                 <DoorOpen className="size-6 text-honey" />
                 <p className="text-sm text-muted-foreground">
-                  {isOwner ? "Add the first shared room to start booking." : "No rooms yet."}
+                  {isOwner ? m.rooms_empty_owner() : m.rooms_empty_member()}
                 </p>
               </CardContent>
             </Card>

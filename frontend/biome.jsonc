@@ -8,6 +8,7 @@
       "!src/components/ui",
       "!src/routeTree.gen.ts",
       "!src/lib/api/generated",
+      "!src/paraglide",
       "!dist",
       "!public"
     ]

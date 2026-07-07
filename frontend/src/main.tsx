@@ -7,6 +7,10 @@ import { ThemeProvider } from "./components/theme-provider.tsx";
 import { Toaster } from "./components/ui/sonner.tsx";
 import { queryClient, router } from "./router.tsx";
 import "./index.css";
+import { getLocale } from "./paraglide/runtime.js";
+
+// Keep the document language in sync with the active locale (set before render).
+document.documentElement.lang = getLocale();
 
 const rootEl = document.getElementById("root");
 if (!rootEl) throw new Error("Root element #root not found");

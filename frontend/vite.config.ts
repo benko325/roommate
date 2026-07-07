@@ -1,5 +1,6 @@
 /// <reference types="vitest/config" />
 import { fileURLToPath, URL } from "node:url";
+import { paraglideVitePlugin } from "@inlang/paraglide-js";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
@@ -18,6 +19,12 @@ export default defineConfig({
     tanstackRouter({ target: "react", autoCodeSplitting: true }),
     react(),
     tailwindcss(),
+    paraglideVitePlugin({
+      project: "./project.inlang",
+      outdir: "./src/paraglide",
+      // Locale = explicit user choice, else browser language, else English.
+      strategy: ["localStorage", "preferredLanguage", "baseLocale"],
+    }),
   ],
   resolve: {
     alias: {

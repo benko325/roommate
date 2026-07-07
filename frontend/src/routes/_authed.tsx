@@ -1,9 +1,11 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { CalendarClock, DoorOpen, LogOut, Shield, User } from "lucide-react";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import { requireAuth } from "@/lib/auth/guard";
 import { useAuth, useLogout } from "@/lib/auth/use-auth";
+import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/_authed")({
   beforeLoad: requireAuth,
@@ -24,24 +26,25 @@ function AuthedLayout() {
           <nav className="flex items-center gap-1">
             <Button variant="ghost" size="sm" asChild>
               <Link to="/reservations">
-                <CalendarClock className="size-4" /> My reservations
+                <CalendarClock className="size-4" /> {m.nav_my_reservations()}
               </Link>
             </Button>
             <Button variant="ghost" size="sm" asChild>
               <Link to="/profile">
-                <User className="size-4" /> Profile
+                <User className="size-4" /> {m.nav_profile()}
               </Link>
             </Button>
             {user?.systemRole === "ADMIN" && (
               <Button variant="ghost" size="sm" asChild>
                 <Link to="/admin">
-                  <Shield className="size-4" /> Admin
+                  <Shield className="size-4" /> {m.nav_admin()}
                 </Link>
               </Button>
             )}
+            <LanguageSwitcher />
             <ModeToggle />
             <Button variant="ghost" size="sm" onClick={() => logout()}>
-              <LogOut className="size-4" /> Sign out
+              <LogOut className="size-4" /> {m.nav_signout()}
             </Button>
           </nav>
         </div>

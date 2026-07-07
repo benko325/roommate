@@ -1,11 +1,17 @@
+import { cs, sk } from "date-fns/locale";
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
+import { getLocale } from "@/paraglide/runtime";
+
+// date-fns locales for the app's non-English languages; English is the default.
+const DATE_LOCALES = { cs, sk } as const;
+const dateLocale = () => DATE_LOCALES[getLocale() as keyof typeof DATE_LOCALES];
 
 /** "HH:mm" of an instant, in the given timezone. */
 export const hhmmInTz = (iso: string, tz: string) => formatInTimeZone(new Date(iso), tz, "HH:mm");
 
-/** e.g. "Wed, Aug 5" of an instant, in the given timezone. */
+/** e.g. "Wed, Aug 5" of an instant, in the given timezone and app language. */
 export const dateLabelInTz = (iso: string, tz: string) =>
-  formatInTimeZone(new Date(iso), tz, "EEE, MMM d");
+  formatInTimeZone(new Date(iso), tz, "EEE, MMM d", { locale: dateLocale() });
 
 /** Today's date as yyyy-MM-dd in the given timezone. */
 export const todayInTz = (tz: string) => formatInTimeZone(new Date(), tz, "yyyy-MM-dd");

@@ -9,6 +9,7 @@ import {
   useInvitationsControllerReject,
 } from "@/lib/api/generated/hooks";
 import { getToken } from "@/lib/auth/token";
+import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/invite/$token")({
   component: InvitePage,
@@ -25,16 +26,12 @@ function InvitePage() {
   const body = () => {
     if (isLoading) return <Skeleton className="h-24 w-full" />;
     if (isError || !data) {
-      return (
-        <p className="text-center text-sm text-muted-foreground">
-          This invitation link is invalid.
-        </p>
-      );
+      return <p className="text-center text-sm text-muted-foreground">{m.invite_invalid()}</p>;
     }
     if (data.status !== "PENDING") {
       return (
         <p className="text-center text-sm text-muted-foreground">
-          This invitation has already been {data.status.toLowerCase()}.
+          {data.status === "ACCEPTED" ? m.invite_already_accepted() : m.invite_already_declined()}
         </p>
       );
     }
@@ -42,14 +39,16 @@ function InvitePage() {
       return (
         <div className="space-y-4 text-center">
           <p className="text-sm text-muted-foreground">
-            Sign in as <span className="font-medium text-ink">{data.email}</span> to respond.
+            {m.invite_signin_prompt_before()}{" "}
+            <span className="font-medium text-ink">{data.email}</span>{" "}
+            {m.invite_signin_prompt_after()}
           </p>
           <div className="flex justify-center gap-2">
             <Button asChild>
-              <Link to="/signin">Sign in</Link>
+              <Link to="/signin">{m.signin_button()}</Link>
             </Button>
             <Button variant="outline" asChild>
-              <Link to="/register">Create account</Link>
+              <Link to="/register">{m.register_button()}</Link>
             </Button>
           </div>
         </div>
@@ -64,15 +63,15 @@ function InvitePage() {
               { data: { token } },
               {
                 onSuccess: () => {
-                  toast.success(`You've joined ${data.unitName}`);
+                  toast.success(m.invite_joined_toast({ unitName: data.unitName }));
                   navigate({ to: "/dashboard" });
                 },
-                onError: () => toast.error("Could not accept (is this invite for your email?)"),
+                onError: () => toast.error(m.invite_accept_error()),
               },
             )
           }
         >
-          Accept invitation
+          {m.invite_accept_button()}
         </Button>
         <Button
           variant="outline"
@@ -82,15 +81,15 @@ function InvitePage() {
               { data: { token } },
               {
                 onSuccess: () => {
-                  toast("Invitation declined");
+                  toast(m.invite_declined_toast());
                   navigate({ to: "/dashboard" });
                 },
-                onError: () => toast.error("Could not decline"),
+                onError: () => toast.error(m.invite_decline_error()),
               },
             )
           }
         >
-          Decline
+          {m.invite_decline_button()}
         </Button>
       </div>
     );
@@ -98,11 +97,13 @@ function InvitePage() {
 
   return (
     <AuthShell
-      title={data?.unitName ? `Join ${data.unitName}` : "Household invitation"}
-      subtitle="You've been invited to a shared household on RoomMate."
+      title={
+        data?.unitName ? m.invite_title({ unitName: data.unitName }) : m.invite_title_generic()
+      }
+      subtitle={m.invite_subtitle()}
       footer={
         <Link to="/" className="font-medium text-honey hover:underline">
-          Back home
+          {m.invite_back_home()}
         </Link>
       }
     >

@@ -9,6 +9,7 @@
       "@/*": ["./src/*"]
     },
     "allowArbitraryExtensions": true,
+    "allowJs": true,
     "skipLibCheck": true,
 
     /* Bundler mode */

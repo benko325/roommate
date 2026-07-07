@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuthControllerResetPassword } from "@/lib/api/generated/hooks";
+import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/reset-password/$token")({
   component: ResetPasswordPage,
@@ -15,11 +16,11 @@ export const Route = createFileRoute("/reset-password/$token")({
 
 const schema = z
   .object({
-    newPassword: z.string().min(8, "At least 8 characters"),
-    confirmPassword: z.string().min(1, "Required"),
+    newPassword: z.string().min(8, m.validation_password_min()),
+    confirmPassword: z.string().min(1, m.validation_required()),
   })
   .refine((v) => v.newPassword === v.confirmPassword, {
-    message: "Passwords do not match",
+    message: m.validation_passwords_mismatch(),
     path: ["confirmPassword"],
   });
 type Values = z.infer<typeof schema>;
@@ -42,27 +43,27 @@ function ResetPasswordPage() {
       { data: { token, newPassword: values.newPassword } },
       {
         onSuccess: () => {
-          toast.success("Password updated — please sign in");
+          toast.success(m.reset_success_toast());
           navigate({ to: "/signin" });
         },
-        onError: () => toast.error("This reset link is invalid or has expired"),
+        onError: () => toast.error(m.reset_error_toast()),
       },
     );
   }
 
   return (
     <AuthShell
-      title="Choose a new password"
-      subtitle="Enter a new password for your account."
+      title={m.reset_title()}
+      subtitle={m.reset_subtitle()}
       footer={
         <Link to="/signin" className="font-medium text-honey hover:underline">
-          Back to sign in
+          {m.back_to_signin()}
         </Link>
       }
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
         <div className="space-y-2">
-          <Label htmlFor="newPassword">New password</Label>
+          <Label htmlFor="newPassword">{m.new_password_label()}</Label>
           <Input
             id="newPassword"
             type="password"
@@ -74,7 +75,7 @@ function ResetPasswordPage() {
           )}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="confirmPassword">Confirm new password</Label>
+          <Label htmlFor="confirmPassword">{m.confirm_password_label()}</Label>
           <Input
             id="confirmPassword"
             type="password"
@@ -86,7 +87,7 @@ function ResetPasswordPage() {
           )}
         </div>
         <Button type="submit" className="w-full" disabled={reset.isPending}>
-          {reset.isPending ? "Updating…" : "Update password"}
+          {reset.isPending ? m.reset_button_pending() : m.reset_button()}
         </Button>
       </form>
     </AuthShell>

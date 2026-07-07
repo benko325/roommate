@@ -6,6 +6,7 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { apiErrorMessage } from "@/lib/api/error-message";
 import {
   unitInvitationsControllerListQueryKey,
   unitInvitationsControllerMembersQueryKey,
@@ -15,12 +16,21 @@ import {
   useUnitInvitationsControllerRemoveMember,
   useUnitInvitationsControllerRevoke,
 } from "@/lib/api/generated/hooks";
+import { m } from "@/paraglide/messages";
+import { getLocale } from "@/paraglide/runtime";
 
 const STATUS_VARIANT = {
   PENDING: "secondary",
   ACCEPTED: "default",
   REJECTED: "outline",
   EXPIRED: "outline",
+} as const;
+
+const STATUS_LABEL = {
+  PENDING: m.invitation_status_pending,
+  ACCEPTED: m.invitation_status_accepted,
+  REJECTED: m.invitation_status_rejected,
+  EXPIRED: m.invitation_status_expired,
 } as const;
 
 export function PeoplePanel({ unitId, isOwner }: { unitId: string; isOwner: boolean }) {
@@ -36,35 +46,35 @@ export function PeoplePanel({ unitId, isOwner }: { unitId: string; isOwner: bool
   return (
     <div className="space-y-8">
       <section>
-        <h3 className="font-display text-lg font-semibold">Members</h3>
+        <h3 className="font-display text-lg font-semibold">{m.members_title()}</h3>
         <div className="mt-3 divide-y rounded-xl border">
           {members && members.length > 0 ? (
-            members.map((m) => (
-              <div key={m.userId} className="flex items-center justify-between px-4 py-3">
+            members.map((member) => (
+              <div key={member.userId} className="flex items-center justify-between px-4 py-3">
                 <div>
                   <p className="font-medium">
-                    {m.firstName} {m.lastName}
+                    {member.firstName} {member.lastName}
                   </p>
-                  <p className="text-sm text-muted-foreground">{m.email}</p>
+                  <p className="text-sm text-muted-foreground">{member.email}</p>
                 </div>
                 {isOwner && (
                   <ConfirmDialog
-                    title="Remove this member?"
-                    description={`${m.firstName} will lose access to this household and its rooms.`}
-                    confirmLabel="Remove"
+                    title={m.member_remove_title()}
+                    description={m.member_remove_description({ firstName: member.firstName })}
+                    confirmLabel={m.remove_button()}
                     onConfirm={() =>
                       removeMember.mutate(
-                        { unitId, memberUserId: m.userId },
+                        { unitId, memberUserId: member.userId },
                         {
                           onSuccess: () => {
                             invalidateMembers();
-                            toast.success("Member removed");
+                            toast.success(m.member_removed_toast());
                           },
                         },
                       )
                     }
                     trigger={
-                      <Button variant="ghost" size="icon" aria-label="Remove member">
+                      <Button variant="ghost" size="icon" aria-label={m.member_remove_aria()}>
                         <UserMinus className="size-4 text-destructive" />
                       </Button>
                     }
@@ -73,7 +83,9 @@ export function PeoplePanel({ unitId, isOwner }: { unitId: string; isOwner: bool
               </div>
             ))
           ) : (
-            <p className="px-4 py-6 text-center text-sm text-muted-foreground">No members yet.</p>
+            <p className="px-4 py-6 text-center text-sm text-muted-foreground">
+              {m.members_empty()}
+            </p>
           )}
         </div>
       </section>
@@ -110,12 +122,10 @@ function InvitationsSection({
         onSuccess: () => {
           invalidate();
           setEmail("");
-          toast.success("Invitation sent");
+          toast.success(m.invitation_sent_toast());
         },
         onError: (err) => {
-          const msg = (err as { response?: { data?: { message?: string } } })?.response?.data
-            ?.message;
-          toast.error(msg ?? "Could not send invitation");
+          toast.error(apiErrorMessage(err) ?? m.invitation_send_error());
         },
       },
     );
@@ -123,17 +133,17 @@ function InvitationsSection({
 
   return (
     <section>
-      <h3 className="font-display text-lg font-semibold">Invitations</h3>
+      <h3 className="font-display text-lg font-semibold">{m.invitations_title()}</h3>
       <div className="mt-3 flex gap-2">
         <Input
           type="email"
-          placeholder="housemate@example.com"
+          placeholder={m.invite_email_placeholder()}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && send()}
         />
         <Button onClick={send} disabled={invite.isPending}>
-          <Mail className="size-4" /> Invite
+          <Mail className="size-4" /> {m.invite_button()}
         </Button>
       </div>
 
@@ -144,16 +154,18 @@ function InvitationsSection({
               <div>
                 <p className="font-medium">{inv.email}</p>
                 <p className="text-xs text-muted-foreground">
-                  Sent {new Date(inv.sentAt).toLocaleDateString()}
+                  {m.invitation_sent_date({
+                    date: new Date(inv.sentAt).toLocaleDateString(getLocale()),
+                  })}
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant={STATUS_VARIANT[inv.status]}>{inv.status.toLowerCase()}</Badge>
+                <Badge variant={STATUS_VARIANT[inv.status]}>{STATUS_LABEL[inv.status]()}</Badge>
                 {inv.status === "PENDING" && (
                   <Button
                     variant="ghost"
                     size="icon"
-                    aria-label="Revoke invitation"
+                    aria-label={m.invite_revoke_aria()}
                     onClick={() =>
                       revoke.mutate({ unitId, invitationId: inv.id }, { onSuccess: invalidate })
                     }

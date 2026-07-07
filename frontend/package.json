@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "postinstall": "paraglide-js compile --project ./project.inlang --outdir ./src/paraglide",
+    "build": "paraglide-js compile --project ./project.inlang --outdir ./src/paraglide && tsc -b && vite build",
     "check-types": "tsc -b",
     "test": "vitest run",
     "generate:api": "kubb generate",
@@ -37,6 +38,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.1",
+    "@inlang/paraglide-js": "^2.20.2",
     "@kubb/cli": "^4.39.2",
     "@kubb/core": "^4.39.2",
     "@kubb/plugin-client": "^4.39.2",

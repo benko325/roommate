@@ -1,6 +1,7 @@
 import { Monitor, Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
+import { m } from "@/paraglide/messages";
 
 const ORDER = ["light", "dark", "system"] as const;
 const ICON = { light: Sun, dark: Moon, system: Monitor };
@@ -17,7 +18,7 @@ export function ModeToggle() {
     <Button
       variant="ghost"
       size="icon"
-      aria-label={`Theme: ${current}. Switch theme.`}
+      aria-label={m.theme_toggle_aria({ theme: current })}
       onClick={() => setTheme(ORDER[(ORDER.indexOf(current) + 1) % ORDER.length])}
     >
       <Icon className="size-5" />

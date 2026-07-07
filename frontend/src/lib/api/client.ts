@@ -1,6 +1,7 @@
 import { axiosInstance } from "@kubb/plugin-client/clients/axios";
 import axios, { type AxiosRequestConfig } from "axios";
 import { clearTokens, getRefreshToken, getToken, setTokens } from "@/lib/auth/token";
+import { getLocale } from "@/paraglide/runtime";
 
 // Point the Kubb-generated clients at the backend and attach the JWT.
 // Imported once at app startup (main.tsx) for these side effects.
@@ -12,6 +13,8 @@ axiosInstance.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  // Backend uses this for localized emails (invitations, password reset).
+  config.headers["Accept-Language"] = getLocale();
   return config;
 });
 

@@ -10,13 +10,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { m } from "@/paraglide/messages";
 
 /** Generic destructive-action confirmation. */
 export function ConfirmDialog({
   trigger,
   title,
   description,
-  confirmLabel = "Delete",
+  confirmLabel,
   onConfirm,
 }: {
   trigger: ReactNode;
@@ -34,12 +35,12 @@ export function ConfirmDialog({
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{m.cancel_button()}</AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            {confirmLabel}
+            {confirmLabel ?? m.delete_button()}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

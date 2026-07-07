@@ -8,6 +8,7 @@ import {
 import type { Prisma, Reservation, Room, User } from '@prisma/client';
 import { dateToTimeString } from '../common/time';
 import { localDayEnd, localDayStart, localMinutesOfDay } from '../common/timezone';
+import { apiError } from '../common/api-error';
 import { HousingUnitsService } from '../housing-units/housing-units.service';
 import { PrismaService } from '../prisma/prisma.service';
 import type { CreateReservationDto, UpdateReservationDto } from './dto/reservation.dto';
@@ -45,7 +46,7 @@ export class ReservationsService {
   /** Availability for a room in an optional [from, to] window (ACTIVE only). */
   async listForRoom(userId: string, roomId: string, from?: string, to?: string) {
     const room = await this.prisma.room.findUnique({ where: { id: roomId } });
-    if (!room) throw new NotFoundException('Room not found');
+    if (!room) throw new NotFoundException(apiError('room_not_found', 'Room not found'));
     const role = await this.units.assertMember(userId, room.unitId);
 
     const reservations = await this.prisma.reservation.findMany({
@@ -150,19 +151,22 @@ export class ReservationsService {
 
   private async getRoomForMember(userId: string, roomId: string): Promise<Room> {
     const room = await this.prisma.room.findUnique({ where: { id: roomId } });
-    if (!room) throw new NotFoundException('Room not found');
+    if (!room) throw new NotFoundException(apiError('room_not_found', 'Room not found'));
     await this.units.assertMember(userId, room.unitId);
     return room;
   }
 
   private async getOwnActive(userId: string, reservationId: string): Promise<Reservation> {
     const reservation = await this.prisma.reservation.findUnique({ where: { id: reservationId } });
-    if (!reservation) throw new NotFoundException('Reservation not found');
+    if (!reservation)
+      throw new NotFoundException(apiError('reservation_not_found', 'Reservation not found'));
     if (reservation.userId !== userId) {
-      throw new ForbiddenException('You can only change your own reservations');
+      throw new ForbiddenException(
+        apiError('not_own_reservation', 'You can only change your own reservations'),
+      );
     }
     if (reservation.status !== 'ACTIVE') {
-      throw new BadRequestException('Reservation is cancelled');
+      throw new BadRequestException(apiError('reservation_cancelled', 'Reservation is cancelled'));
     }
     return reservation;
   }
@@ -177,13 +181,17 @@ export class ReservationsService {
     excludeId?: string,
   ) {
     if (endAt <= startAt) {
-      throw new BadRequestException('End time must be after start time');
+      throw new BadRequestException(
+        apiError('end_not_after_start', 'End time must be after start time'),
+      );
     }
 
     const dayStart = localDayStart(startAt, tz);
     const dayEnd = localDayEnd(startAt, tz);
     if (endAt.getTime() > dayEnd.getTime()) {
-      throw new BadRequestException('A reservation must be within a single day');
+      throw new BadRequestException(
+        apiError('multi_day_reservation', 'A reservation must be within a single day'),
+      );
     }
 
     // Availability window (local time-of-day in the unit's timezone).
@@ -192,13 +200,15 @@ export class ReservationsService {
     const from = room.availableFrom ? timeColumnMinutes(room.availableFrom) : null;
     const to = room.availableTo ? timeColumnMinutes(room.availableTo) : null;
     if (from !== null && startMin < from) {
+      const time = dateToTimeString(room.availableFrom) ?? '';
       throw new BadRequestException(
-        `Room is only available from ${dateToTimeString(room.availableFrom)}`,
+        apiError('room_available_from', `Room is only available from ${time}`, { time }),
       );
     }
     if (to !== null && endMin > to) {
+      const time = dateToTimeString(room.availableTo) ?? '';
       throw new BadRequestException(
-        `Room is only available until ${dateToTimeString(room.availableTo)}`,
+        apiError('room_available_until', `Room is only available until ${time}`, { time }),
       );
     }
 
@@ -207,7 +217,13 @@ export class ReservationsService {
       const hours = (endAt.getTime() - startAt.getTime()) / HOUR_MS;
       if (hours > room.maxReservationHours) {
         throw new BadRequestException(
-          `Reservations can be at most ${room.maxReservationHours}h long`,
+          apiError(
+            'reservation_too_long',
+            `Reservations can be at most ${room.maxReservationHours}h long`,
+            {
+              hours: room.maxReservationHours,
+            },
+          ),
         );
       }
     }
@@ -224,7 +240,10 @@ export class ReservationsService {
         endAt: { gt: startAt },
       },
     });
-    if (overlap) throw new ConflictException('This time slot overlaps an existing reservation');
+    if (overlap)
+      throw new ConflictException(
+        apiError('slot_overlap', 'This time slot overlaps an existing reservation'),
+      );
 
     // Max reservations per day (same user, same room).
     if (room.maxReservationsPerDay) {
@@ -239,7 +258,11 @@ export class ReservationsService {
       });
       if (count >= room.maxReservationsPerDay) {
         throw new BadRequestException(
-          `You can make at most ${room.maxReservationsPerDay} reservations per day for this room`,
+          apiError(
+            'max_per_day',
+            `You can make at most ${room.maxReservationsPerDay} reservations per day for this room`,
+            { count: room.maxReservationsPerDay },
+          ),
         );
       }
     }
@@ -259,7 +282,13 @@ export class ReservationsService {
       });
       if (near) {
         throw new BadRequestException(
-          `Leave at least ${room.minGapMinutes} minutes between your reservations`,
+          apiError(
+            'min_gap',
+            `Leave at least ${room.minGapMinutes} minutes between your reservations`,
+            {
+              minutes: room.minGapMinutes,
+            },
+          ),
         );
       }
     }

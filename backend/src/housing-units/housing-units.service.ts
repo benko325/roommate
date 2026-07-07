@@ -1,5 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import type { HousingUnit } from '@prisma/client';
+import { apiError } from '../common/api-error';
 import { PrismaService } from '../prisma/prisma.service';
 import type { CreateHousingUnitDto, UpdateHousingUnitDto } from './dto/housing-unit.dto';
 
@@ -63,7 +64,7 @@ export class HousingUnitsService {
       where: { id },
       include: withCounts,
     });
-    if (!unit) throw new NotFoundException('Housing unit not found');
+    if (!unit) throw new NotFoundException(apiError('unit_not_found', 'Housing unit not found'));
     const role = await this.resolveRole(userId, unit.ownerId, id);
     return toDto(unit, role);
   }
@@ -93,9 +94,11 @@ export class HousingUnitsService {
   /** Ensures the user owns the unit; returns it. Throws 404/403 otherwise. */
   async assertOwner(userId: string, unitId: string): Promise<HousingUnit> {
     const unit = await this.prisma.housingUnit.findUnique({ where: { id: unitId } });
-    if (!unit) throw new NotFoundException('Housing unit not found');
+    if (!unit) throw new NotFoundException(apiError('unit_not_found', 'Housing unit not found'));
     if (unit.ownerId !== userId) {
-      throw new ForbiddenException('Only the owner can perform this action');
+      throw new ForbiddenException(
+        apiError('owner_only', 'Only the owner can perform this action'),
+      );
     }
     return unit;
   }
@@ -103,7 +106,7 @@ export class HousingUnitsService {
   /** Ensures the user is the owner or a member of the unit; returns their role. */
   async assertMember(userId: string, unitId: string): Promise<ViewerRole> {
     const unit = await this.prisma.housingUnit.findUnique({ where: { id: unitId } });
-    if (!unit) throw new NotFoundException('Housing unit not found');
+    if (!unit) throw new NotFoundException(apiError('unit_not_found', 'Housing unit not found'));
     return this.resolveRole(userId, unit.ownerId, unitId);
   }
 
@@ -112,7 +115,8 @@ export class HousingUnitsService {
     const membership = await this.prisma.unitMembership.findUnique({
       where: { unitId_userId: { unitId, userId } },
     });
-    if (!membership) throw new ForbiddenException('You are not a member of this unit');
+    if (!membership)
+      throw new ForbiddenException(apiError('not_a_member', 'You are not a member of this unit'));
     return 'MEMBER';
   }
 }

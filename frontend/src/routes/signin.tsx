@@ -9,14 +9,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuthControllerLogin } from "@/lib/api/generated/hooks";
 import { useSaveSession } from "@/lib/auth/use-auth";
+import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/signin")({
   component: SignInPage,
 });
 
 const schema = z.object({
-  email: z.string().email("Enter a valid email"),
-  password: z.string().min(1, "Password is required"),
+  email: z.string().email(m.validation_email_invalid()),
+  password: z.string().min(1, m.validation_password_required()),
 });
 type Values = z.infer<typeof schema>;
 
@@ -41,32 +42,32 @@ function SignInPage() {
           saveSession(res);
           navigate({ to: "/dashboard" });
         },
-        onError: () => toast.error("Invalid email or password"),
+        onError: () => toast.error(m.signin_error_invalid()),
       },
     );
   }
 
   return (
     <AuthShell
-      title="Welcome back"
-      subtitle="Sign in to see what's free in your household."
+      title={m.signin_title()}
+      subtitle={m.signin_subtitle()}
       footer={
         <>
-          New here?{" "}
+          {m.signin_footer_prompt()}{" "}
           <Link to="/register" className="font-medium text-honey hover:underline">
-            Create a household
+            {m.signin_footer_link()}
           </Link>
         </>
       }
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{m.email_label()}</Label>
           <Input
             id="email"
             type="email"
             autoComplete="email"
-            placeholder="you@example.com"
+            placeholder={m.email_placeholder()}
             aria-invalid={!!errors.email}
             {...register("email")}
           />
@@ -78,12 +79,12 @@ function SignInPage() {
         </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{m.password_label()}</Label>
             <Link
               to="/forgot-password"
               className="text-xs text-muted-foreground hover:text-honey hover:underline"
             >
-              Forgot password?
+              {m.signin_forgot_link()}
             </Link>
           </div>
           <Input
@@ -100,7 +101,7 @@ function SignInPage() {
           )}
         </div>
         <Button type="submit" className="w-full" disabled={login.isPending}>
-          {login.isPending ? "Signing in…" : "Sign in"}
+          {login.isPending ? m.signin_button_pending() : m.signin_button()}
         </Button>
       </form>
     </AuthShell>
