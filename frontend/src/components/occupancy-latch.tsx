@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { m } from "@/paraglide/messages";
 
 type Status = "free" | "occupied";
 
@@ -12,7 +13,7 @@ export function OccupancyLatch({ status, className }: { status: Status; classNam
   return (
     <span
       role="status"
-      aria-label={occupied ? "Occupied" : "Vacant"}
+      aria-label={occupied ? m.latch_occupied() : m.latch_vacant()}
       className={cn(
         "inline-flex select-none items-center gap-2 rounded-full border py-1 pr-3 pl-1 text-xs font-medium",
         occupied ? "border-clay/30 bg-clay/12 text-clay" : "border-sage/30 bg-sage/12 text-sage",
@@ -27,7 +28,7 @@ export function OccupancyLatch({ status, className }: { status: Status; classNam
           )}
         />
       </span>
-      {occupied ? "Occupied" : "Vacant"}
+      {occupied ? m.latch_occupied() : m.latch_vacant()}
     </span>
   );
 }

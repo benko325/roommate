@@ -18,6 +18,7 @@ import {
 import type { MyReservationDto } from "@/lib/api/generated/types";
 import { dateLabelInTz, hhmmInTz } from "@/lib/time";
 import { usePagination } from "@/lib/use-pagination";
+import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/_authed/reservations")({
   component: MyReservationsPage,
@@ -47,12 +48,12 @@ function MyReservationsPage() {
         );
         return { previous };
       },
-      onSuccess: () => toast.success("Reservation cancelled"),
+      onSuccess: () => toast.success(m.reservation_cancelled_toast()),
       onError: (_err, _vars, ctx) => {
         if (ctx?.previous) {
           queryClient.setQueryData(reservationsControllerMineQueryKey(), ctx.previous);
         }
-        toast.error("Could not cancel reservation");
+        toast.error(m.reservation_cancel_error());
       },
       onSettled: () => {
         queryClient.invalidateQueries({ queryKey: reservationsControllerMineQueryKey() });
@@ -68,14 +69,14 @@ function MyReservationsPage() {
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-bold tracking-tight">My reservations</h1>
-      <p className="mt-1 text-muted-foreground">Everything you've booked across your households.</p>
+      <h1 className="font-display text-3xl font-bold tracking-tight">{m.reservations_title()}</h1>
+      <p className="mt-1 text-muted-foreground">{m.reservations_subtitle()}</p>
 
       <Tabs value={status} onValueChange={(v) => setStatus(v as typeof status)} className="mt-6">
         <TabsList>
-          <TabsTrigger value="ALL">All</TabsTrigger>
-          <TabsTrigger value="ACTIVE">Active</TabsTrigger>
-          <TabsTrigger value="CANCELLED">Cancelled</TabsTrigger>
+          <TabsTrigger value="ALL">{m.filter_all()}</TabsTrigger>
+          <TabsTrigger value="ACTIVE">{m.filter_active()}</TabsTrigger>
+          <TabsTrigger value="CANCELLED">{m.filter_cancelled()}</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -96,7 +97,9 @@ function MyReservationsPage() {
                       {r.roomName}
                     </Link>
                     <span className="text-sm text-muted-foreground">· {r.unitName}</span>
-                    {r.status === "CANCELLED" && <Badge variant="outline">cancelled</Badge>}
+                    {r.status === "CANCELLED" && (
+                      <Badge variant="outline">{m.status_cancelled_badge()}</Badge>
+                    )}
                   </div>
                   <p className="font-mono text-sm text-muted-foreground tabular-nums">
                     {formatRange(r.startAt, r.endAt, r.unitTimezone)}
@@ -112,8 +115,8 @@ function MyReservationsPage() {
                       label: formatRange(r.startAt, r.endAt, r.unitTimezone),
                     }}
                     trigger={
-                      <Button variant="ghost" size="sm" aria-label="Report issue">
-                        <MessageSquareWarning className="size-4" /> Report issue
+                      <Button variant="ghost" size="sm" aria-label={m.report_issue_button()}>
+                        <MessageSquareWarning className="size-4" /> {m.report_issue_button()}
                       </Button>
                     }
                   />
@@ -124,7 +127,7 @@ function MyReservationsPage() {
                       className="text-destructive"
                       onClick={() => cancel.mutate({ id: r.id })}
                     >
-                      Cancel
+                      {m.cancel_button()}
                     </Button>
                   )}
                 </div>
@@ -137,8 +140,10 @@ function MyReservationsPage() {
               <CalendarClock className="size-6 text-honey" />
               <p className="text-sm text-muted-foreground">
                 {status === "ALL"
-                  ? "No reservations yet. Open a room to book a slot."
-                  : `No ${status.toLowerCase()} reservations.`}
+                  ? m.reservations_empty_all()
+                  : status === "ACTIVE"
+                    ? m.reservations_empty_active()
+                    : m.reservations_empty_cancelled()}
               </p>
             </CardContent>
           </Card>

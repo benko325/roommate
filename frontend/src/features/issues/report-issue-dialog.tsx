@@ -23,14 +23,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { apiErrorMessage } from "@/lib/api/error-message";
 import {
   unitIssuesControllerListQueryKey,
   useRoomsControllerFindAll,
   useUnitIssuesControllerCreate,
 } from "@/lib/api/generated/hooks";
+import { m } from "@/paraglide/messages";
 
 const schema = z.object({
-  message: z.string().trim().min(1, "Describe the issue").max(1000),
+  message: z.string().trim().min(1, m.validation_issue_message()).max(1000),
 });
 type Values = z.infer<typeof schema>;
 
@@ -77,15 +79,13 @@ export function ReportIssueDialog({
           await queryClient.invalidateQueries({
             queryKey: unitIssuesControllerListQueryKey(unitId),
           });
-          toast.success("Issue reported to the owner");
+          toast.success(m.issue_reported_toast());
           reset();
           setRoomId(GENERAL);
           setOpen(false);
         },
         onError: (err: unknown) => {
-          const msg = (err as { response?: { data?: { message?: string } } })?.response?.data
-            ?.message;
-          toast.error(msg ?? "Something went wrong");
+          toast.error(apiErrorMessage(err) ?? m.error_generic());
         },
       },
     );
@@ -96,23 +96,26 @@ export function ReportIssueDialog({
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Report an issue</DialogTitle>
+          <DialogTitle>{m.issue_dialog_title()}</DialogTitle>
           <DialogDescription>
             {reservation
-              ? `About your reservation of ${reservation.roomName}, ${reservation.label}.`
-              : "The owner of this household will see your report."}
+              ? m.issue_dialog_about_reservation({
+                  roomName: reservation.roomName,
+                  label: reservation.label,
+                })
+              : m.issue_dialog_description()}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
           {!reservation && (
             <div className="space-y-2">
-              <Label>Where</Label>
+              <Label>{m.issue_where_label()}</Label>
               <Select value={roomId} onValueChange={setRoomId}>
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={GENERAL}>General (whole household)</SelectItem>
+                  <SelectItem value={GENERAL}>{m.issue_general_option()}</SelectItem>
                   {rooms?.map((room) => (
                     <SelectItem key={room.id} value={room.id}>
                       {room.name}
@@ -123,18 +126,18 @@ export function ReportIssueDialog({
             </div>
           )}
           <div className="space-y-2">
-            <Label htmlFor="issue-message">What's wrong?</Label>
+            <Label htmlFor="issue-message">{m.issue_message_label()}</Label>
             <Textarea
               id="issue-message"
               rows={4}
-              placeholder="The shower drain is clogged…"
+              placeholder={m.issue_message_placeholder()}
               {...register("message")}
             />
             {errors.message && <p className="text-sm text-destructive">{errors.message.message}</p>}
           </div>
           <DialogFooter>
             <Button type="submit" disabled={create.isPending}>
-              {create.isPending ? "Sending…" : "Report issue"}
+              {create.isPending ? m.issue_send_pending() : m.report_issue_button()}
             </Button>
           </DialogFooter>
         </form>

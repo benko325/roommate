@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { HouseholdFormDialog } from "@/features/households/household-form-dialog";
 import { useHousingUnitsControllerFindAll } from "@/lib/api/generated/hooks";
+import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/_authed/dashboard")({
   component: DashboardPage,
@@ -18,15 +19,13 @@ function DashboardPage() {
     <div>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-3xl font-bold tracking-tight">Your households</h1>
-          <p className="mt-1 text-muted-foreground">
-            Households you own or belong to. Open one to manage rooms and bookings.
-          </p>
+          <h1 className="font-display text-3xl font-bold tracking-tight">{m.dashboard_title()}</h1>
+          <p className="mt-1 text-muted-foreground">{m.dashboard_subtitle()}</p>
         </div>
         <HouseholdFormDialog
           trigger={
             <Button>
-              <Plus className="size-4" /> New household
+              <Plus className="size-4" /> {m.dashboard_new_household()}
             </Button>
           }
         />
@@ -47,16 +46,16 @@ function DashboardPage() {
                   <div className="flex items-start justify-between">
                     <h2 className="font-display text-lg font-semibold">{unit.name}</h2>
                     <Badge variant={unit.viewerRole === "OWNER" ? "default" : "secondary"}>
-                      {unit.viewerRole === "OWNER" ? "Owner" : "Member"}
+                      {unit.viewerRole === "OWNER" ? m.role_owner() : m.role_member()}
                     </Badge>
                   </div>
                   <p className="mt-1 text-sm text-muted-foreground">{unit.address}</p>
                   <div className="mt-4 flex gap-4 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1.5">
-                      <DoorOpen className="size-4" /> {unit.roomCount} rooms
+                      <DoorOpen className="size-4" /> {m.rooms_count({ count: unit.roomCount })}
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <Users className="size-4" /> {unit.memberCount} members
+                      <Users className="size-4" /> {m.members_count({ count: unit.memberCount })}
                     </span>
                   </div>
                 </CardContent>
@@ -71,15 +70,13 @@ function DashboardPage() {
               <DoorOpen className="size-6 text-honey" />
             </div>
             <div>
-              <p className="font-display text-lg font-semibold">No households yet</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Create one to add rooms and invite your housemates.
-              </p>
+              <p className="font-display text-lg font-semibold">{m.dashboard_empty_title()}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{m.dashboard_empty_subtitle()}</p>
             </div>
             <HouseholdFormDialog
               trigger={
                 <Button>
-                  <Plus className="size-4" /> Create a household
+                  <Plus className="size-4" /> {m.dashboard_empty_button()}
                 </Button>
               }
             />

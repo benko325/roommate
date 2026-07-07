@@ -9,16 +9,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuthControllerRegister } from "@/lib/api/generated/hooks";
 import { useSaveSession } from "@/lib/auth/use-auth";
+import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/register")({
   component: RegisterPage,
 });
 
 const schema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email("Enter a valid email"),
-  password: z.string().min(8, "At least 8 characters"),
+  firstName: z.string().min(1, m.validation_first_name_required()),
+  lastName: z.string().min(1, m.validation_last_name_required()),
+  email: z.string().email(m.validation_email_invalid()),
+  password: z.string().min(8, m.validation_password_min()),
 });
 type Values = z.infer<typeof schema>;
 
@@ -45,7 +46,7 @@ function RegisterPage() {
         },
         onError: (err) => {
           const conflict = (err as { response?: { status?: number } })?.response?.status === 409;
-          toast.error(conflict ? "That email is already registered" : "Could not create account");
+          toast.error(conflict ? m.register_error_conflict() : m.register_error_generic());
         },
       },
     );
@@ -53,13 +54,13 @@ function RegisterPage() {
 
   return (
     <AuthShell
-      title="Create your household"
-      subtitle="Set up an account and invite your housemates."
+      title={m.register_title()}
+      subtitle={m.register_subtitle()}
       footer={
         <>
-          Already have an account?{" "}
+          {m.register_footer_prompt()}{" "}
           <Link to="/signin" className="font-medium text-honey hover:underline">
-            Sign in
+            {m.register_footer_link()}
           </Link>
         </>
       }
@@ -67,7 +68,7 @@ function RegisterPage() {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2">
-            <Label htmlFor="firstName">First name</Label>
+            <Label htmlFor="firstName">{m.first_name_label()}</Label>
             <Input
               id="firstName"
               autoComplete="given-name"
@@ -81,7 +82,7 @@ function RegisterPage() {
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="lastName">Last name</Label>
+            <Label htmlFor="lastName">{m.last_name_label()}</Label>
             <Input
               id="lastName"
               autoComplete="family-name"
@@ -96,12 +97,12 @@ function RegisterPage() {
           </div>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{m.email_label()}</Label>
           <Input
             id="email"
             type="email"
             autoComplete="email"
-            placeholder="you@example.com"
+            placeholder={m.email_placeholder()}
             aria-invalid={!!errors.email}
             {...register("email")}
           />
@@ -112,7 +113,7 @@ function RegisterPage() {
           )}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">{m.password_label()}</Label>
           <Input
             id="password"
             type="password"
@@ -127,7 +128,7 @@ function RegisterPage() {
           )}
         </div>
         <Button type="submit" className="w-full" disabled={registerMutation.isPending}>
-          {registerMutation.isPending ? "Creating account…" : "Create account"}
+          {registerMutation.isPending ? m.register_button_pending() : m.register_button()}
         </Button>
       </form>
     </AuthShell>

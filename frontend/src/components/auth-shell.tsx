@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { DoorOpen } from "lucide-react";
 import type { ReactNode } from "react";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -23,7 +24,10 @@ export function AuthShell({
           <DoorOpen className="size-6 text-honey" />
           <span className="font-display text-xl font-bold tracking-tight">RoomMate</span>
         </Link>
-        <ModeToggle />
+        <div className="flex items-center gap-1">
+          <LanguageSwitcher />
+          <ModeToggle />
+        </div>
       </header>
 
       <main className="flex flex-1 items-center justify-center px-6 py-10">

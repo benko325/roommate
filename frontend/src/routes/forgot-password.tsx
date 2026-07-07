@@ -9,12 +9,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuthControllerForgotPassword } from "@/lib/api/generated/hooks";
+import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/forgot-password")({
   component: ForgotPasswordPage,
 });
 
-const schema = z.object({ email: z.string().email("Enter a valid email") });
+const schema = z.object({ email: z.string().email(m.validation_email_invalid()) });
 type Values = z.infer<typeof schema>;
 
 function ForgotPasswordPage() {
@@ -33,36 +34,34 @@ function ForgotPasswordPage() {
 
   return (
     <AuthShell
-      title="Reset your password"
-      subtitle="We'll email you a link to choose a new password."
+      title={m.forgot_title()}
+      subtitle={m.forgot_subtitle()}
       footer={
         <Link to="/signin" className="font-medium text-honey hover:underline">
-          Back to sign in
+          {m.back_to_signin()}
         </Link>
       }
     >
       {sent ? (
         <div className="space-y-3 text-center">
           <MailCheck className="mx-auto size-8 text-sage" />
-          <p className="text-sm text-muted-foreground">
-            If an account exists for that email, a reset link is on its way. Check your inbox.
-          </p>
+          <p className="text-sm text-muted-foreground">{m.forgot_sent_info()}</p>
         </div>
       ) : (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{m.email_label()}</Label>
             <Input
               id="email"
               type="email"
               autoComplete="email"
-              placeholder="you@example.com"
+              placeholder={m.email_placeholder()}
               {...register("email")}
             />
             {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
           </div>
           <Button type="submit" className="w-full" disabled={forgot.isPending}>
-            {forgot.isPending ? "Sending…" : "Send reset link"}
+            {forgot.isPending ? m.forgot_button_pending() : m.forgot_button()}
           </Button>
         </form>
       )}

@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Compass } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { m } from "@/paraglide/messages";
 
 /** Full-page 404, used as the router's defaultNotFoundComponent. */
 export function NotFound() {
@@ -11,13 +12,11 @@ export function NotFound() {
       </div>
       <p className="font-display text-6xl font-bold tracking-tight">404</p>
       <div>
-        <p className="font-display text-lg font-semibold">This page doesn't exist</p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          The link may be outdated, or the page was moved.
-        </p>
+        <p className="font-display text-lg font-semibold">{m.notfound_title()}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{m.notfound_subtitle()}</p>
       </div>
       <Button asChild>
-        <Link to="/dashboard">Go to dashboard</Link>
+        <Link to="/dashboard">{m.notfound_button()}</Link>
       </Button>
     </div>
   );

@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Paraglide compiled output (regenerated on install/build)
+src/paraglide
+
+# inlang plugin cache
+project.inlang/cache

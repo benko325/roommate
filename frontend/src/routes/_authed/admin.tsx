@@ -27,6 +27,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { apiErrorMessage } from "@/lib/api/error-message";
 import {
   adminControllerReservationsQueryKey,
   adminControllerStatsQueryKey,
@@ -44,6 +45,7 @@ import {
 import type { AdminReservationDto, AdminUnitDto, AdminUserDto } from "@/lib/api/generated/types";
 import { useAuth } from "@/lib/auth/use-auth";
 import { usePagination } from "@/lib/use-pagination";
+import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/_authed/admin")({
   component: AdminPage,
@@ -51,16 +53,12 @@ export const Route = createFileRoute("/_authed/admin")({
 
 const PAGE_SIZE = 10;
 
-function apiErrorMessage(err: unknown): string | undefined {
-  return (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-}
-
 /** Centered muted row shown when a filter matches nothing. */
 function EmptyRow({ colSpan }: { colSpan: number }) {
   return (
     <TableRow>
       <TableCell colSpan={colSpan} className="py-8 text-center text-sm text-muted-foreground">
-        No results.
+        {m.no_results()}
       </TableCell>
     </TableRow>
   );
@@ -75,10 +73,10 @@ function AdminPage() {
       <Card>
         <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
           <ShieldOff className="size-8 text-muted-foreground" />
-          <p className="font-display text-lg font-semibold">Admins only</p>
-          <p className="text-sm text-muted-foreground">You don't have access to this area.</p>
+          <p className="font-display text-lg font-semibold">{m.admin_forbidden_title()}</p>
+          <p className="text-sm text-muted-foreground">{m.admin_forbidden_subtitle()}</p>
           <Button asChild variant="outline">
-            <Link to="/dashboard">Back to dashboard</Link>
+            <Link to="/dashboard">{m.admin_forbidden_button()}</Link>
           </Button>
         </CardContent>
       </Card>
@@ -87,15 +85,15 @@ function AdminPage() {
 
   return (
     <div>
-      <h1 className="font-display text-3xl font-bold tracking-tight">Admin</h1>
-      <p className="mt-1 text-muted-foreground">System-wide management and stats.</p>
+      <h1 className="font-display text-3xl font-bold tracking-tight">{m.admin_title()}</h1>
+      <p className="mt-1 text-muted-foreground">{m.admin_subtitle()}</p>
 
       <Tabs defaultValue="overview" className="mt-6">
         <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="users">Users</TabsTrigger>
-          <TabsTrigger value="households">Households</TabsTrigger>
-          <TabsTrigger value="reservations">Reservations</TabsTrigger>
+          <TabsTrigger value="overview">{m.admin_tab_overview()}</TabsTrigger>
+          <TabsTrigger value="users">{m.admin_tab_users()}</TabsTrigger>
+          <TabsTrigger value="households">{m.admin_tab_households()}</TabsTrigger>
+          <TabsTrigger value="reservations">{m.admin_tab_reservations()}</TabsTrigger>
         </TabsList>
         <TabsContent value="overview">
           <OverviewTab />
@@ -117,12 +115,12 @@ function AdminPage() {
 function OverviewTab() {
   const { data: stats } = useAdminControllerStats();
   const cards = [
-    { label: "Users", value: stats?.users },
-    { label: "Households", value: stats?.housingUnits },
-    { label: "Rooms", value: stats?.rooms },
-    { label: "Active reservations", value: stats?.activeReservations },
-    { label: "Total reservations", value: stats?.totalReservations },
-    { label: "Pending invitations", value: stats?.pendingInvitations },
+    { label: m.admin_stat_users(), value: stats?.users },
+    { label: m.admin_stat_households(), value: stats?.housingUnits },
+    { label: m.admin_stat_rooms(), value: stats?.rooms },
+    { label: m.admin_stat_active_reservations(), value: stats?.activeReservations },
+    { label: m.admin_stat_total_reservations(), value: stats?.totalReservations },
+    { label: m.admin_stat_pending_invitations(), value: stats?.pendingInvitations },
   ];
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -163,7 +161,7 @@ function UsersTab({ currentUserId }: { currentUserId: string }) {
         if (ctx?.previous) {
           queryClient.setQueryData(adminControllerUsersQueryKey(), ctx.previous);
         }
-        toast.error(apiErrorMessage(err) ?? "Could not change role");
+        toast.error(apiErrorMessage(err) ?? m.admin_role_error());
       },
       onSettled: invalidate,
     },
@@ -179,12 +177,12 @@ function UsersTab({ currentUserId }: { currentUserId: string }) {
         );
         return { previous };
       },
-      onSuccess: () => toast.success("User deleted"),
+      onSuccess: () => toast.success(m.admin_user_deleted_toast()),
       onError: (err, _vars, ctx) => {
         if (ctx?.previous) {
           queryClient.setQueryData(adminControllerUsersQueryKey(), ctx.previous);
         }
-        toast.error(apiErrorMessage(err) ?? "Could not delete user");
+        toast.error(apiErrorMessage(err) ?? m.admin_user_delete_error());
       },
       onSettled: invalidate,
     },
@@ -206,7 +204,7 @@ function UsersTab({ currentUserId }: { currentUserId: string }) {
   return (
     <div>
       <Input
-        placeholder="Search by name or email…"
+        placeholder={m.admin_users_search_placeholder()}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="mb-3 max-w-xs"
@@ -214,12 +212,12 @@ function UsersTab({ currentUserId }: { currentUserId: string }) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>User</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead className="text-right">Owns</TableHead>
-            <TableHead className="text-right">Member</TableHead>
-            <TableHead className="text-right">Bookings</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead>{m.admin_col_user()}</TableHead>
+            <TableHead>{m.admin_col_role()}</TableHead>
+            <TableHead className="text-right">{m.admin_col_owns()}</TableHead>
+            <TableHead className="text-right">{m.admin_col_member()}</TableHead>
+            <TableHead className="text-right">{m.admin_col_bookings()}</TableHead>
+            <TableHead className="text-right">{m.admin_col_actions()}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -253,16 +251,18 @@ function UsersTab({ currentUserId }: { currentUserId: string }) {
                         })
                       }
                     >
-                      {u.systemRole === "ADMIN" ? "Demote" : "Make admin"}
+                      {u.systemRole === "ADMIN"
+                        ? m.admin_demote_button()
+                        : m.admin_promote_button()}
                     </Button>
                   )}
                   {u.id !== currentUserId && (
                     <ConfirmDialog
-                      title={`Delete ${u.email}?`}
-                      description="This permanently deletes the user and their memberships and bookings."
+                      title={m.admin_user_delete_title({ email: u.email })}
+                      description={m.admin_user_delete_description()}
                       onConfirm={() => deleteUser.mutate({ id: u.id })}
                       trigger={
-                        <Button variant="ghost" size="icon" aria-label="Delete user">
+                        <Button variant="ghost" size="icon" aria-label={m.admin_user_delete_aria()}>
                           <Trash2 className="size-4 text-destructive" />
                         </Button>
                       }
@@ -294,12 +294,12 @@ function HouseholdsTab() {
         );
         return { previous };
       },
-      onSuccess: () => toast.success("Household deleted"),
+      onSuccess: () => toast.success(m.admin_unit_deleted_toast()),
       onError: (err, _vars, ctx) => {
         if (ctx?.previous) {
           queryClient.setQueryData(adminControllerUnitsQueryKey(), ctx.previous);
         }
-        toast.error(apiErrorMessage(err) ?? "Could not delete household");
+        toast.error(apiErrorMessage(err) ?? m.admin_unit_delete_error());
       },
       onSettled: () => {
         queryClient.invalidateQueries({ queryKey: adminControllerUnitsQueryKey() });
@@ -325,7 +325,7 @@ function HouseholdsTab() {
   return (
     <div>
       <Input
-        placeholder="Search by name, address, or owner…"
+        placeholder={m.admin_units_search_placeholder()}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="mb-3 max-w-xs"
@@ -333,12 +333,12 @@ function HouseholdsTab() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Household</TableHead>
-            <TableHead>Owner</TableHead>
-            <TableHead>Timezone</TableHead>
-            <TableHead className="text-right">Rooms</TableHead>
-            <TableHead className="text-right">Members</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead>{m.admin_col_household()}</TableHead>
+            <TableHead>{m.admin_col_owner()}</TableHead>
+            <TableHead>{m.admin_col_timezone()}</TableHead>
+            <TableHead className="text-right">{m.admin_col_rooms()}</TableHead>
+            <TableHead className="text-right">{m.admin_col_members()}</TableHead>
+            <TableHead className="text-right">{m.admin_col_actions()}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -355,11 +355,11 @@ function HouseholdsTab() {
               <TableCell className="text-right tabular-nums">{u.memberCount}</TableCell>
               <TableCell className="text-right">
                 <ConfirmDialog
-                  title={`Delete ${u.name}?`}
-                  description="This permanently removes the household, its rooms, and all reservations."
+                  title={m.admin_unit_delete_title({ name: u.name })}
+                  description={m.admin_unit_delete_description()}
                   onConfirm={() => deleteUnit.mutate({ id: u.id })}
                   trigger={
-                    <Button variant="ghost" size="icon" aria-label="Delete household">
+                    <Button variant="ghost" size="icon" aria-label={m.admin_unit_delete_aria()}>
                       <Trash2 className="size-4 text-destructive" />
                     </Button>
                   }
@@ -393,12 +393,12 @@ function ReservationsTab() {
         );
         return { previous };
       },
-      onSuccess: () => toast.success("Reservation deleted"),
+      onSuccess: () => toast.success(m.admin_reservation_deleted_toast()),
       onError: (err, _vars, ctx) => {
         if (ctx?.previous) {
           queryClient.setQueryData(adminControllerReservationsQueryKey(), ctx.previous);
         }
-        toast.error(apiErrorMessage(err) ?? "Could not delete reservation");
+        toast.error(apiErrorMessage(err) ?? m.admin_reservation_delete_error());
       },
       onSettled: () => {
         queryClient.invalidateQueries({ queryKey: adminControllerReservationsQueryKey() });
@@ -426,7 +426,7 @@ function ReservationsTab() {
     <div>
       <div className="mb-3 flex flex-wrap gap-2">
         <Input
-          placeholder="Search by room, household, or user…"
+          placeholder={m.admin_reservations_search_placeholder()}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="max-w-xs"
@@ -436,21 +436,21 @@ function ReservationsTab() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="ALL">All statuses</SelectItem>
-            <SelectItem value="ACTIVE">Active</SelectItem>
-            <SelectItem value="CANCELLED">Cancelled</SelectItem>
+            <SelectItem value="ALL">{m.filter_all_statuses()}</SelectItem>
+            <SelectItem value="ACTIVE">{m.filter_active()}</SelectItem>
+            <SelectItem value="CANCELLED">{m.filter_cancelled()}</SelectItem>
           </SelectContent>
         </Select>
       </div>
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>When</TableHead>
-            <TableHead>Room</TableHead>
-            <TableHead>Household</TableHead>
-            <TableHead>Booked by</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead>{m.admin_col_when()}</TableHead>
+            <TableHead>{m.admin_col_room()}</TableHead>
+            <TableHead>{m.admin_col_household()}</TableHead>
+            <TableHead>{m.admin_col_booked_by()}</TableHead>
+            <TableHead>{m.admin_col_status()}</TableHead>
+            <TableHead className="text-right">{m.admin_col_actions()}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -465,16 +465,20 @@ function ReservationsTab() {
               <TableCell className="text-sm text-muted-foreground">{r.userEmail}</TableCell>
               <TableCell>
                 <Badge variant={r.status === "ACTIVE" ? "default" : "outline"}>
-                  {r.status.toLowerCase()}
+                  {r.status === "ACTIVE" ? m.status_active_badge() : m.status_cancelled_badge()}
                 </Badge>
               </TableCell>
               <TableCell className="text-right">
                 <ConfirmDialog
-                  title="Delete this reservation?"
-                  description="This permanently removes the reservation."
+                  title={m.admin_reservation_delete_title()}
+                  description={m.admin_reservation_delete_description()}
                   onConfirm={() => deleteRes.mutate({ id: r.id })}
                   trigger={
-                    <Button variant="ghost" size="icon" aria-label="Delete reservation">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={m.admin_reservation_delete_aria()}
+                    >
                       <Trash2 className="size-4 text-destructive" />
                     </Button>
                   }

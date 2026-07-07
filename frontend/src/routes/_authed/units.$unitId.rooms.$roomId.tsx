@@ -17,6 +17,7 @@ import {
   useRoomsControllerFindOne,
 } from "@/lib/api/generated/hooks";
 import { dayBoundsUtc, hhmmInTz, todayInTz } from "@/lib/time";
+import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/_authed/units/$unitId/rooms/$roomId")({
   component: RoomCalendarPage,
@@ -39,23 +40,25 @@ function RoomCalendarPage() {
     <div>
       <Button variant="ghost" size="sm" asChild className="mb-4 -ml-2">
         <Link to="/units/$unitId" params={{ unitId }}>
-          <ArrowLeft className="size-4" /> Back to household
+          <ArrowLeft className="size-4" /> {m.room_back_link()}
         </Link>
       </Button>
 
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-bold tracking-tight">{room?.name ?? "Room"}</h1>
+          <h1 className="font-display text-3xl font-bold tracking-tight">
+            {room?.name ?? m.room_fallback_name()}
+          </h1>
           {room?.availableFrom && room?.availableTo && (
             <p className="mt-1 font-mono text-sm text-muted-foreground">
-              Open {room.availableFrom}–{room.availableTo} ({tz})
+              {m.room_open_hours({ from: room.availableFrom, to: room.availableTo, tz })}
             </p>
           )}
         </div>
         <div className="flex items-end gap-2">
           <div className="space-y-1">
             <label htmlFor="date" className="text-xs text-muted-foreground">
-              Date ({tz})
+              {m.room_date_label({ tz })}
             </label>
             <Input
               id="date"
@@ -73,7 +76,7 @@ function RoomCalendarPage() {
             defaultTo={room?.availableTo}
             trigger={
               <Button>
-                <Plus className="size-4" /> Reserve
+                <Plus className="size-4" /> {m.reserve_button()}
               </Button>
             }
           />
@@ -82,7 +85,7 @@ function RoomCalendarPage() {
 
       <div className="mt-6 space-y-2">
         {isLoading ? (
-          <p className="text-sm text-muted-foreground">Loading…</p>
+          <p className="text-sm text-muted-foreground">{m.loading()}</p>
         ) : reservations && reservations.length > 0 ? (
           reservations.map((r) => (
             <Card key={r.id}>
@@ -98,9 +101,11 @@ function RoomCalendarPage() {
                           {r.author.firstName} {r.author.lastName}
                         </span>
                       ) : (
-                        <span className="font-medium text-muted-foreground">Reserved</span>
+                        <span className="font-medium text-muted-foreground">
+                          {m.reserved_fallback()}
+                        </span>
                       )}
-                      {r.isMine && <Badge variant="secondary">You</Badge>}
+                      {r.isMine && <Badge variant="secondary">{m.you_badge()}</Badge>}
                     </div>
                     {r.note && <p className="text-sm text-muted-foreground">{r.note}</p>}
                   </div>
@@ -125,13 +130,13 @@ function RoomCalendarPage() {
                               queryClient.invalidateQueries({
                                 queryKey: reservationsControllerMineQueryKey(),
                               });
-                              toast.success("Reservation cancelled");
+                              toast.success(m.reservation_cancelled_toast());
                             },
                           },
                         )
                       }
                     >
-                      Cancel
+                      {m.cancel_button()}
                     </Button>
                   )}
                 </div>
@@ -142,9 +147,7 @@ function RoomCalendarPage() {
           <Card className="border-dashed">
             <CardContent className="flex flex-col items-center gap-2 py-12 text-center">
               <CalendarClock className="size-6 text-honey" />
-              <p className="text-sm text-muted-foreground">
-                Nothing booked for this day — it's all yours.
-              </p>
+              <p className="text-sm text-muted-foreground">{m.room_empty_day()}</p>
             </CardContent>
           </Card>
         )}

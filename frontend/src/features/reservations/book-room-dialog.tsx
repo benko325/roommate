@@ -14,11 +14,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { apiErrorMessage } from "@/lib/api/error-message";
 import {
   reservationsControllerMineQueryKey,
   useRoomReservationsControllerCreate,
 } from "@/lib/api/generated/hooks";
 import { wallToUtcIso } from "@/lib/time";
+import { m } from "@/paraglide/messages";
+import { getLocale } from "@/paraglide/runtime";
 
 /** Times are entered in the household's timezone and converted to UTC instants. */
 export function BookRoomDialog({
@@ -59,14 +62,12 @@ export function BookRoomDialog({
             queryKey: [{ url: "/rooms/:roomId/reservations", params: { roomId } }],
           });
           queryClient.invalidateQueries({ queryKey: reservationsControllerMineQueryKey() });
-          toast.success("Reserved");
+          toast.success(m.book_reserved_toast());
           setOpen(false);
           setNote("");
         },
         onError: (err) => {
-          const msg = (err as { response?: { data?: { message?: string } } })?.response?.data
-            ?.message;
-          toast.error(msg ?? "Could not create reservation");
+          toast.error(apiErrorMessage(err) ?? m.book_create_error());
         },
       },
     );
@@ -77,21 +78,23 @@ export function BookRoomDialog({
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>New reservation</DialogTitle>
+          <DialogTitle>{m.book_dialog_title()}</DialogTitle>
           <DialogDescription>
-            {new Date(`${date}T00:00:00`).toLocaleDateString(undefined, {
+            {new Date(`${date}T00:00:00`).toLocaleDateString(getLocale(), {
               weekday: "long",
               month: "long",
               day: "numeric",
             })}
-            {defaultFrom && defaultTo ? ` · open ${defaultFrom}–${defaultTo}` : ""} · times in{" "}
-            {timezone}
+            {defaultFrom && defaultTo
+              ? ` · ${m.book_dialog_open_range({ from: defaultFrom, to: defaultTo })}`
+              : ""}{" "}
+            · {m.book_dialog_times_in({ timezone })}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="start">Start</Label>
+              <Label htmlFor="start">{m.start_label()}</Label>
               <Input
                 id="start"
                 type="time"
@@ -100,16 +103,16 @@ export function BookRoomDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="end">End</Label>
+              <Label htmlFor="end">{m.end_label()}</Label>
               <Input id="end" type="time" value={end} onChange={(e) => setEnd(e.target.value)} />
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="note">Note (optional)</Label>
+            <Label htmlFor="note">{m.note_label()}</Label>
             <Textarea
               id="note"
               rows={2}
-              placeholder="What's it for?"
+              placeholder={m.note_placeholder()}
               value={note}
               onChange={(e) => setNote(e.target.value)}
             />
@@ -117,7 +120,7 @@ export function BookRoomDialog({
         </div>
         <DialogFooter>
           <Button onClick={submit} disabled={create.isPending}>
-            {create.isPending ? "Reserving…" : "Reserve"}
+            {create.isPending ? m.reserve_button_pending() : m.reserve_button()}
           </Button>
         </DialogFooter>
       </DialogContent>

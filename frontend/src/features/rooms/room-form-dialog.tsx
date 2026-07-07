@@ -17,17 +17,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { apiErrorMessage } from "@/lib/api/error-message";
 import {
   roomsControllerFindAllQueryKey,
   useRoomsControllerCreate,
   useRoomsControllerUpdate,
 } from "@/lib/api/generated/hooks";
 import type { RoomDto } from "@/lib/api/generated/types";
+import { m } from "@/paraglide/messages";
 
 // Fields are strings in the form; numbers/blanks are normalized on submit.
 // The backend enforces the real F-11 rules and returns a message on failure.
 const schema = z.object({
-  name: z.string().min(1, "Name is required").max(100),
+  name: z.string().min(1, m.validation_name_required()).max(100),
   description: z.string().max(2000).optional(),
   maxReservationHours: z.string().optional(),
   maxReservationsPerDay: z.string().optional(),
@@ -84,12 +86,11 @@ export function RoomFormDialog({
     };
     const onSuccess = async () => {
       await queryClient.invalidateQueries({ queryKey: roomsControllerFindAllQueryKey(unitId) });
-      toast.success(editing ? "Room updated" : "Room added");
+      toast.success(editing ? m.room_updated_toast() : m.room_added_toast());
       setOpen(false);
     };
     const onError = (err: unknown) => {
-      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      toast.error(msg ?? "Something went wrong");
+      toast.error(apiErrorMessage(err) ?? m.error_generic());
     };
     if (room) {
       update.mutate({ unitId, roomId: room.id, data }, { onSuccess, onError });
@@ -105,24 +106,24 @@ export function RoomFormDialog({
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{editing ? "Edit room" : "Add a room"}</DialogTitle>
-          <DialogDescription>
-            Optional rules limit how this room can be booked. Leave blank for no limit.
-          </DialogDescription>
+          <DialogTitle>
+            {editing ? m.room_dialog_edit_title() : m.room_dialog_new_title()}
+          </DialogTitle>
+          <DialogDescription>{m.room_dialog_description()}</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
           <div className="space-y-2">
-            <Label htmlFor="name">Name</Label>
-            <Input id="name" placeholder="Bathroom" {...register("name")} />
+            <Label htmlFor="name">{m.name_label()}</Label>
+            <Input id="name" placeholder={m.room_name_placeholder()} {...register("name")} />
             {errors.name && <p className="text-sm text-destructive">{errors.name.message}</p>}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="description">Description (optional)</Label>
+            <Label htmlFor="description">{m.description_label()}</Label>
             <Textarea id="description" rows={2} {...register("description")} />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="maxReservationHours">Max hours / booking</Label>
+              <Label htmlFor="maxReservationHours">{m.room_max_hours_label()}</Label>
               <Input
                 id="maxReservationHours"
                 type="number"
@@ -131,7 +132,7 @@ export function RoomFormDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="maxReservationsPerDay">Max bookings / day</Label>
+              <Label htmlFor="maxReservationsPerDay">{m.room_max_per_day_label()}</Label>
               <Input
                 id="maxReservationsPerDay"
                 type="number"
@@ -140,23 +141,23 @@ export function RoomFormDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="minGapMinutes">Min gap (minutes)</Label>
+              <Label htmlFor="minGapMinutes">{m.room_min_gap_label()}</Label>
               <Input id="minGapMinutes" type="number" min={0} {...register("minGapMinutes")} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="availableFrom">Available from</Label>
+              <Label htmlFor="availableFrom">{m.room_available_from_label()}</Label>
               <Input id="availableFrom" type="time" {...register("availableFrom")} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="availableTo">Available until</Label>
+              <Label htmlFor="availableTo">{m.room_available_to_label()}</Label>
               <Input id="availableTo" type="time" {...register("availableTo")} />
             </div>
           </div>
           <DialogFooter>
             <Button type="submit" disabled={pending}>
-              {pending ? "Saving…" : editing ? "Save changes" : "Add room"}
+              {pending ? m.save_button_pending() : editing ? m.save_button() : m.add_room_button()}
             </Button>
           </DialogFooter>
         </form>
