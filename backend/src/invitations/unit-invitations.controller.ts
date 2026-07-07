@@ -14,6 +14,7 @@ import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagg
 import type { AuthUser } from '../auth/auth.types';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { type Locale, RequestLocale } from '../common/request-locale.decorator';
 import { CreateInvitationDto, InvitationDto, MemberDto } from './dto/invitation.dto';
 import { InvitationsService } from './invitations.service';
 
@@ -31,8 +32,9 @@ export class UnitInvitationsController {
     @CurrentUser() user: AuthUser,
     @Param('unitId', ParseUUIDPipe) unitId: string,
     @Body() dto: CreateInvitationDto,
+    @RequestLocale() locale: Locale,
   ) {
-    return this.invitations.invite(user.id, unitId, dto.email);
+    return this.invitations.invite(user.id, unitId, dto.email, locale);
   }
 
   @Get('invitations')

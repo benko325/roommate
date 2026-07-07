@@ -4,6 +4,8 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import type { User } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
+import { apiError } from '../common/api-error';
+import type { Locale } from '../common/request-locale.decorator';
 import type { Env } from '../config/env.schema';
 import { MailService } from '../mail/mail.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -32,7 +34,8 @@ export class AuthService {
 
   async register(dto: RegisterDto): Promise<AuthResult> {
     const existing = await this.users.findByEmailWithHash(dto.email);
-    if (existing) throw new ConflictException('Email is already registered');
+    if (existing)
+      throw new ConflictException(apiError('email_registered', 'Email is already registered'));
 
     const passwordHash = await bcrypt.hash(dto.password, BCRYPT_ROUNDS);
     const user = await this.users.create({
@@ -46,10 +49,12 @@ export class AuthService {
 
   async login(dto: LoginDto): Promise<AuthResult> {
     const user = await this.users.findByEmailWithHash(dto.email);
-    if (!user) throw new UnauthorizedException('Invalid email or password');
+    if (!user)
+      throw new UnauthorizedException(apiError('invalid_credentials', 'Invalid email or password'));
 
     const valid = await bcrypt.compare(dto.password, user.passwordHash);
-    if (!valid) throw new UnauthorizedException('Invalid email or password');
+    if (!valid)
+      throw new UnauthorizedException(apiError('invalid_credentials', 'Invalid email or password'));
 
     return this.issueTokens(user);
   }
@@ -61,7 +66,9 @@ export class AuthService {
       include: { user: true },
     });
     if (!record || record.revokedAt || record.expiresAt.getTime() < Date.now()) {
-      throw new UnauthorizedException('Invalid or expired refresh token');
+      throw new UnauthorizedException(
+        apiError('refresh_invalid', 'Invalid or expired refresh token'),
+      );
     }
     await this.prisma.refreshToken.update({
       where: { id: record.id },
@@ -79,7 +86,7 @@ export class AuthService {
   }
 
   /** Always resolves (no email-existence disclosure); emails a link if the user exists. */
-  async forgotPassword(email: string): Promise<void> {
+  async forgotPassword(email: string, locale: Locale = 'en'): Promise<void> {
     const user = await this.users.findByEmailWithHash(email);
     if (!user) return;
 
@@ -92,7 +99,7 @@ export class AuthService {
         expiresAt: new Date(Date.now() + ttlMin * MINUTE_MS),
       },
     });
-    this.mail.sendPasswordReset(user.email, token);
+    this.mail.sendPasswordReset(user.email, token, locale);
   }
 
   async resetPassword(token: string, newPassword: string): Promise<void> {
@@ -100,7 +107,9 @@ export class AuthService {
       where: { tokenHash: hashToken(token) },
     });
     if (!record || record.usedAt || record.expiresAt.getTime() < Date.now()) {
-      throw new UnauthorizedException('This reset link is invalid or has expired');
+      throw new UnauthorizedException(
+        apiError('reset_link_invalid', 'This reset link is invalid or has expired'),
+      );
     }
     const passwordHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
     await this.prisma.$transaction([
@@ -123,9 +132,12 @@ export class AuthService {
     newPassword: string,
   ): Promise<void> {
     const user = await this.users.findByIdWithHash(userId);
-    if (!user) throw new UnauthorizedException('User not found');
+    if (!user) throw new UnauthorizedException(apiError('user_not_found', 'User not found'));
     const valid = await bcrypt.compare(currentPassword, user.passwordHash);
-    if (!valid) throw new UnauthorizedException('Current password is incorrect');
+    if (!valid)
+      throw new UnauthorizedException(
+        apiError('current_password_incorrect', 'Current password is incorrect'),
+      );
     const passwordHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
     await this.users.updatePasswordHash(userId, passwordHash);
     // Force re-login everywhere after a password change.

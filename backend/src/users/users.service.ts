@@ -1,5 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import type { Prisma, SystemRole, User } from '@prisma/client';
+import { apiError } from '../common/api-error';
 import { PrismaService } from '../prisma/prisma.service';
 
 /** User fields safe to expose over the API — never includes passwordHash. */
@@ -43,7 +44,7 @@ export class UsersService {
     if (data.email) {
       const existing = await this.prisma.user.findUnique({ where: { email: data.email } });
       if (existing && existing.id !== id) {
-        throw new ConflictException('Email is already in use');
+        throw new ConflictException(apiError('email_in_use', 'Email is already in use'));
       }
     }
     return this.prisma.user.update({ where: { id }, data, select: publicUserSelect });

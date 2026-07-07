@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import type { Issue, Reservation, Room, User } from '@prisma/client';
+import { apiError } from '../common/api-error';
 import { HousingUnitsService } from '../housing-units/housing-units.service';
 import { PrismaService } from '../prisma/prisma.service';
 import type { CreateIssueDto } from './dto/issue.dto';
@@ -49,7 +50,9 @@ export class IssuesService {
         where: { id: dto.roomId },
       });
       if (!room || room.unitId !== unitId) {
-        throw new BadRequestException('Room does not belong to this unit');
+        throw new BadRequestException(
+          apiError('issue_room_not_in_unit', 'Room does not belong to this unit'),
+        );
       }
     }
 
@@ -62,10 +65,17 @@ export class IssuesService {
       // Tenants only see anonymized slots (N-05), so an issue may only
       // reference the reporter's own reservation.
       if (!reservation || reservation.room.unitId !== unitId || reservation.userId !== userId) {
-        throw new BadRequestException('Reservation does not belong to you in this unit');
+        throw new BadRequestException(
+          apiError(
+            'issue_reservation_not_yours',
+            'Reservation does not belong to you in this unit',
+          ),
+        );
       }
       if (roomId && reservation.roomId !== roomId) {
-        throw new BadRequestException('Reservation is not in the selected room');
+        throw new BadRequestException(
+          apiError('issue_reservation_room_mismatch', 'Reservation is not in the selected room'),
+        );
       }
       roomId ??= reservation.roomId;
     }
@@ -100,10 +110,12 @@ export class IssuesService {
       where: { id: issueId },
     });
     if (!issue || issue.unitId !== unitId) {
-      throw new NotFoundException('Issue not found');
+      throw new NotFoundException(apiError('issue_not_found', 'Issue not found'));
     }
     if (issue.status === 'RESOLVED') {
-      throw new BadRequestException('Issue is already resolved');
+      throw new BadRequestException(
+        apiError('issue_already_resolved', 'Issue is already resolved'),
+      );
     }
     const updated = await this.prisma.issue.update({
       where: { id: issueId },

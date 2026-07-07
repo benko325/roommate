@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import type { Room } from '@prisma/client';
+import { apiError } from '../common/api-error';
 import { dateToTimeString, minutesOfDay, timeStringToDate } from '../common/time';
 import { HousingUnitsService } from '../housing-units/housing-units.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -102,13 +103,16 @@ export class RoomsService {
 
   private async getRoomInUnit(unitId: string, roomId: string): Promise<Room> {
     const room = await this.prisma.room.findUnique({ where: { id: roomId } });
-    if (!room || room.unitId !== unitId) throw new NotFoundException('Room not found');
+    if (!room || room.unitId !== unitId)
+      throw new NotFoundException(apiError('room_not_found', 'Room not found'));
     return room;
   }
 
   private assertWindowValid(from?: string | null, to?: string | null) {
     if (from && to && minutesOfDay(to) <= minutesOfDay(from)) {
-      throw new BadRequestException('availableTo must be later than availableFrom');
+      throw new BadRequestException(
+        apiError('available_range_invalid', 'availableTo must be later than availableFrom'),
+      );
     }
   }
 }
